@@ -1,12 +1,22 @@
-function App() {
+import { ThemeProvider } from '@context/ThemeContext';
+import { AuthProvider } from '@context/AuthContext';
+import { RouteProvider } from '@routes/RouteProvider';
+import { useTheme } from '@hooks/useTheme';
+function AppContent() {
+  const { theme } = useTheme();
   return (
-    <div>
-      <h1 className="text-3xl font-bold underline">Hello World</h1>
-      <button className="bg-blue-500 text-white p-2 rounded-md">
-        Click me
-      </button>
+    <div data-theme={theme} className="app-root">
+      <AuthProvider>
+        <RouteProvider />
+      </AuthProvider>
     </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+}

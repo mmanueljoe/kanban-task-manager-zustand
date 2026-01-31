@@ -1,0 +1,109 @@
+import { useState } from 'react';
+import { Modal } from '@components/ui/Modal';
+import { Button } from '@components/ui/Button';
+import iconCross from '@assets/icon-cross.svg';
+
+type EditBoardModalProps = {
+  open: boolean;
+  onClose: () => void;
+  boardName: string;
+  columnNames: string[];
+};
+
+export function EditBoardModal({
+  open,
+  onClose,
+  boardName: initialName,
+  columnNames: initialColumns,
+}: EditBoardModalProps) {
+  const [name, setName] = useState(initialName);
+  const [columns, setColumns] = useState(initialColumns);
+
+  const addColumn = () => setColumns((c) => [...c, '']);
+  const removeColumn = (i: number) =>
+    setColumns((c) => c.filter((_, idx) => idx !== i));
+  const updateColumn = (i: number, v: string) =>
+    setColumns((c) => {
+      const next = [...c];
+      next[i] = v;
+      return next;
+    });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onClose();
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} aria-label="Edit board">
+      <h2 className="app-modal-title">Edit Board</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="input-wrap" style={{ marginBottom: 24 }}>
+          <label className="input-label">Board Name</label>
+          <input
+            type="text"
+            className="input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Platform Launch"
+          />
+        </div>
+        <div style={{ marginBottom: 24 }}>
+          <label
+            className="input-label"
+            style={{ display: 'block', marginBottom: 8 }}
+          >
+            Board Columns
+          </label>
+          {columns.map((val, i) => (
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                marginBottom: 8,
+              }}
+            >
+              <input
+                type="text"
+                className="input"
+                value={val}
+                onChange={(e) => updateColumn(i, e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <button
+                type="button"
+                onClick={() => removeColumn(i)}
+                aria-label="Remove column"
+                style={{
+                  padding: 8,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--text-muted)',
+                }}
+              >
+                <img src={iconCross} alt="" width={14} height={14} />
+              </button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="secondary"
+            size="large"
+            onClick={addColumn}
+            style={{ width: '100%' }}
+          >
+            + Add New Column
+          </Button>
+        </div>
+        <div className="app-modal-actions">
+          <Button type="submit" variant="primary" size="large">
+            Save Changes
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}

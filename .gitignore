@@ -12,6 +12,9 @@ node_modules
 dist
 dist-ssr
 *.local
+tsconfig.tsbuildinfo
+tsconfig.node.tsbuildinfo
+tsconfig.app.tsbuildinfo
 
 # Environment (secrets)
 .env
@@ -35,3 +38,8 @@ coverage
 # Legacy ESLint (when using flat config)
 .eslintrc.js
 .eslintignore
+
+
+# others
+.vscode
+.cursor
