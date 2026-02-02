@@ -1,9 +1,7 @@
 import { Link, useParams } from 'react-router';
 import { useRef, useState, useEffect } from 'react';
 import { useTheme } from '@hooks/useTheme';
-import boardsData from '@data/data.json';
-import type { BoardsData } from '@/types/types';
-
+import { useBoards } from '@/hooks/useBoards';
 import logoMobile from '@assets/logo-mobile.svg';
 import iconChevronDown from '@assets/icon-chevron-down.svg';
 import iconAddTask from '@assets/icon-add-task-mobile.svg';
@@ -11,8 +9,6 @@ import iconEllipsis from '@assets/icon-vertical-ellipsis.svg';
 import iconBoard from '@assets/icon-board.svg';
 import iconLight from '@assets/icon-light-theme.svg';
 import iconDark from '@assets/icon-dark-theme.svg';
-
-const boards = (boardsData as BoardsData).boards;
 
 type HeaderProps = {
   onAddTask?: () => void;
@@ -27,6 +23,7 @@ export function Header({
   onDeleteBoard,
   canEditBoard = false,
 }: HeaderProps) {
+  const { boards } = useBoards();
   const { boardId } = useParams<{ boardId?: string }>();
   const { theme, setTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);

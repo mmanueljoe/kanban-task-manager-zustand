@@ -2,12 +2,17 @@ import { useState } from 'react';
 import { Modal } from '@components/ui/Modal';
 import { Button } from '@components/ui/Button';
 import iconCross from '@assets/icon-cross.svg';
+import { useBoards } from '@/hooks/useBoards';
+import { useUi } from '@/hooks/useUi';
+import type { Board } from '@/types/types';
 
 type EditBoardModalProps = {
   open: boolean;
   onClose: () => void;
   boardName: string;
   columnNames: string[];
+  boardIndex: number | null;
+  originalBoard: Board;
 };
 
 export function EditBoardModal({
@@ -15,7 +20,11 @@ export function EditBoardModal({
   onClose,
   boardName: initialName,
   columnNames: initialColumns,
+  boardIndex,
+  originalBoard,
 }: EditBoardModalProps) {
+  const { dispatch } = useBoards();
+  const { startLoading, stopLoading, showToast } = useUi();
   const [name, setName] = useState(initialName);
   const [columns, setColumns] = useState(initialColumns);
 
@@ -31,7 +40,42 @@ export function EditBoardModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onClose();
+
+    if (boardIndex == null) {
+      showToast({
+        type: 'error',
+        message: 'Could not update board. Please try again.',
+      });
+      onClose();
+      return;
+    }
+    const cleanedColumns = columns
+      .map((c) => c.trim())
+      .filter((c) => c.length > 0);
+
+    const updatedColumns = cleanedColumns.map((colName) => {
+      const existing = originalBoard.columns.find((c) => c.name === colName);
+      return existing
+        ? { ...existing, name: colName }
+        : { name: colName, tasks: [] };
+    });
+
+    const updatedBoard: Board = {
+      ...originalBoard,
+      name: name.trim() || originalBoard.name,
+      columns: updatedColumns,
+    };
+    startLoading('editBoard');
+    try {
+      dispatch({
+        type: 'UPDATE_BOARD',
+        payload: { boardIndex, board: updatedBoard },
+      });
+      showToast({ type: 'success', message: 'Board updated' });
+    } finally {
+      stopLoading('editBoard');
+      onClose();
+    }
   };
 
   return (

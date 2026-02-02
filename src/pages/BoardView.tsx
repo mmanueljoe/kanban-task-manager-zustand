@@ -1,9 +1,10 @@
 import { Link, useParams } from 'react-router';
-import data from '@data/data.json';
+import { useBoards } from '@/hooks/useBoards';
 import { Button } from '@components/ui/Button';
-import type { Board, BoardsData, Task } from '@/types/types';
-
-const boardsData = data as BoardsData;
+import type { Board, Task } from '@/types/types';
+import { useCallback, useState } from 'react';
+import { TaskDetailsModal } from '@components/modals/TaskDetailsModal';
+import { AddColumnModal } from '@components/modals/AddColumnModal';
 
 const COLUMN_DOT_COLORS = [
   '#49C4E5',
@@ -13,19 +14,29 @@ const COLUMN_DOT_COLORS = [
   '#2A3FDB',
 ];
 
-function subtaskSummary(task: Task): string {
-  const total = task.subtasks?.length ?? 0;
-  const done = task.subtasks?.filter((s) => s.isCompleted).length ?? 0;
-  return `${done} of ${total} substask${total !== 1 ? 's' : ''}`;
-}
-
 export function BoardView() {
   const { boardId } = useParams<{ boardId: string }>();
   const index = boardId != null ? parseInt(boardId, 10) : NaN;
-  const board: Board | null =
-    Number.isFinite(index) && index >= 0 && index < boardsData.boards.length
-      ? boardsData.boards[index]
+  const [selectedTask, setSelectedTask] = useState<{
+    boardIndex: number | null;
+    columnName: string | null;
+    taskTitle: string | null;
+  } | null>(null);
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [addColumnOpen, setAddColumnOpen] = useState(false);
+  const { boards, dispatch } = useBoards();
+  const boardIndex =
+    Number.isFinite(index) && index >= 0 && index < boards.length
+      ? index
       : null;
+
+  const board: Board | null = boardIndex !== null ? boards[boardIndex] : null;
+
+  const subtaskSummary = useCallback((task: Task): string => {
+    const total = task.subtasks?.length ?? 0;
+    const done = task.subtasks?.filter((s) => s.isCompleted).length ?? 0;
+    return `${done} of ${total} substask${total !== 1 ? 's' : ''}`;
+  }, []);
 
   if (!board) {
     return (
@@ -78,11 +89,46 @@ export function BoardView() {
             </div>
             <ul className="app-board-tasks">
               {col.tasks.map((task) => (
-                <li key={task.title} className="app-board-task">
+                <li
+                  key={task.title}
+                  className="app-board-task"
+                  onClick={() => {
+                    if (boardIndex === null) return;
+                    setSelectedTask({
+                      boardIndex,
+                      columnName: col.name,
+                      taskTitle: task.title,
+                    });
+                    setTaskModalOpen(true);
+                  }}
+                >
                   <p className="app-board-task-title">{task.title}</p>
                   <p className="app-board-task-subtasks">
                     {subtaskSummary(task)}
                   </p>
+                  {boardIndex !== null &&
+                    colIndex < board.columns.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const fromColumn = col.name;
+                          const toColumn = board.columns[colIndex + 1].name;
+                          dispatch({
+                            type: 'MOVE_TASK',
+                            payload: {
+                              boardIndex,
+                              fromColumn,
+                              toColumn,
+                              taskTitle: task.title,
+                            },
+                          });
+                        }}
+                        className="btn btn-secondary btn-small"
+                      >
+                        Move to {board.columns[colIndex + 1].name}
+                      </button>
+                    )}
                 </li>
               ))}
             </ul>
@@ -92,10 +138,28 @@ export function BoardView() {
           type="button"
           className="app-board-new-column"
           aria-label="Add new column"
+          onClick={() => setAddColumnOpen(true)}
         >
           + New Column
         </button>
       </div>
+
+      {selectedTask && (
+        <TaskDetailsModal
+          open={taskModalOpen}
+          onClose={() => setTaskModalOpen(false)}
+          boardIndex={selectedTask.boardIndex}
+          columnName={selectedTask.columnName}
+          taskTitle={selectedTask.taskTitle}
+        />
+      )}
+      {addColumnOpen && (
+        <AddColumnModal
+          open={addColumnOpen}
+          onClose={() => setAddColumnOpen(false)}
+          boardIndex={boardIndex}
+        />
+      )}
     </div>
   );
 }

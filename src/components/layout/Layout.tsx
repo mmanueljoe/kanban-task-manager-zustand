@@ -5,13 +5,11 @@ import { Aside } from '@components/layout/Aside';
 import { AddTaskModal } from '@components/modals/AddTaskModal';
 import { EditBoardModal } from '@components/modals/EditBoardModal';
 import { DeleteBoardModal } from '@components/modals/DeleteBoardModal';
-import boardsData from '@data/data.json';
-import type { BoardsData } from '@/types/types';
+import { useBoards } from '@/hooks/useBoards';
 import iconShowSidebar from '@assets/icon-show-sidebar.svg';
 
-const boards = (boardsData as BoardsData).boards;
-
 export function Layout() {
+  const { boards } = useBoards();
   const { boardId } = useParams<{ boardId?: string }>();
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [editBoardOpen, setEditBoardOpen] = useState(false);
@@ -64,6 +62,7 @@ export function Layout() {
             ? columnOptions
             : [{ value: 'Todo', label: 'Todo' }]
         }
+        boardIndex={boardIndex}
       />
       {currentBoard && (
         <>
@@ -72,12 +71,15 @@ export function Layout() {
             onClose={() => setEditBoardOpen(false)}
             boardName={currentBoard.name}
             columnNames={currentBoard.columns.map((c) => c.name)}
+            boardIndex={boardIndex}
+            originalBoard={currentBoard}
           />
           <DeleteBoardModal
             open={deleteBoardOpen}
             onClose={() => setDeleteBoardOpen(false)}
             onConfirm={() => {}}
             boardName={currentBoard.name}
+            boardIndex={boardIndex}
           />
         </>
       )}

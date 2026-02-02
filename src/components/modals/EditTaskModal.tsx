@@ -3,6 +3,7 @@ import { Modal } from '@components/ui/Modal';
 import { Button } from '@components/ui/Button';
 import { Dropdown } from '@components/ui/Dropdown';
 import iconCross from '@assets/icon-cross.svg';
+import { useUi } from '@/hooks/useUi';
 
 type EditTaskModalProps = {
   open: boolean;
@@ -23,6 +24,7 @@ export function EditTaskModal({
   initialSubtasks = ['', ''],
   initialStatus = '',
 }: EditTaskModalProps) {
+  const { showToast } = useUi();
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription);
   const [subtasks, setSubtasks] = useState(
@@ -44,6 +46,7 @@ export function EditTaskModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    showToast({ type: 'success', message: 'Task changes saved' });
     onClose();
   };
 

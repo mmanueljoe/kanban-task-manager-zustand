@@ -3,18 +3,25 @@ import { Modal } from '@components/ui/Modal';
 import { Button } from '@components/ui/Button';
 import { Dropdown } from '@components/ui/Dropdown';
 import iconCross from '@assets/icon-cross.svg';
+import { useBoards } from '@/hooks/useBoards';
+import { useUi } from '@/hooks/useUi';
+import type { Task } from '@/types/types';
 
 type AddTaskModalProps = {
   open: boolean;
   onClose: () => void;
   columnOptions: { value: string; label: string }[];
+  boardIndex: number | null;
 };
 
 export function AddTaskModal({
   open,
   onClose,
   columnOptions,
+  boardIndex,
 }: AddTaskModalProps) {
+  const { dispatch } = useBoards();
+  const { startLoading, stopLoading, showToast } = useUi();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [subtasks, setSubtasks] = useState(['', '']);
@@ -32,7 +39,36 @@ export function AddTaskModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onClose();
+    if (boardIndex == null || !status || !title.trim()) {
+      showToast({
+        type: 'error',
+        message: 'Please provide a title and status for the task.',
+      });
+      onClose();
+      return;
+    }
+
+    const newTask: Task = {
+      title: title.trim(),
+      description: description.trim(),
+      status,
+      subtasks: subtasks
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+        .map((s) => ({ title: s, isCompleted: false })),
+    };
+
+    startLoading('addTask');
+    try {
+      dispatch({
+        type: 'ADD_TASK',
+        payload: { boardIndex, columnName: status, task: newTask },
+      });
+      showToast({ type: 'success', message: 'Task created' });
+    } finally {
+      stopLoading('addTask');
+      onClose();
+    }
   };
 
   return (

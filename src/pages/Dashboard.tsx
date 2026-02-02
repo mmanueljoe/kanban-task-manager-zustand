@@ -1,11 +1,10 @@
 import { Link } from 'react-router';
-import data from '@data/data.json';
 import { Button } from '@components/ui/Button';
-import type { Board, BoardsData } from '@/types/types';
-
-const boards: Board[] = (data as BoardsData).boards;
+import { useBoards } from '@/hooks/useBoards';
 
 export function Dashboard() {
+  const { boards } = useBoards();
+  console.log(boards);
   if (boards.length === 0) {
     return (
       <div className="app-main">

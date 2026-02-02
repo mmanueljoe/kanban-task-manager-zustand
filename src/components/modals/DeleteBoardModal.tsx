@@ -1,11 +1,14 @@
 import { Modal } from '@components/ui/Modal';
 import { Button } from '@components/ui/Button';
+import { useBoards } from '@/hooks/useBoards';
+import { useUi } from '@/hooks/useUi';
 
 type DeleteBoardModalProps = {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
   boardName: string;
+  boardIndex: number | null;
 };
 
 export function DeleteBoardModal({
@@ -13,10 +16,28 @@ export function DeleteBoardModal({
   onClose,
   onConfirm,
   boardName,
+  boardIndex,
 }: DeleteBoardModalProps) {
+  const { dispatch } = useBoards();
+  const { startLoading, stopLoading, showToast } = useUi();
   const handleConfirm = () => {
-    onConfirm();
-    onClose();
+    if (boardIndex == null) {
+      showToast({
+        type: 'error',
+        message: 'Could not delete board. Please try again.',
+      });
+      onClose();
+      return;
+    }
+    startLoading('deleteBoard');
+    try {
+      dispatch({ type: 'DELETE_BOARD', payload: { boardIndex } });
+      onConfirm();
+      showToast({ type: 'success', message: 'Board deleted' });
+    } finally {
+      stopLoading('deleteBoard');
+      onClose();
+    }
   };
 
   return (

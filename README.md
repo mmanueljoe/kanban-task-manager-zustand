@@ -1,24 +1,25 @@
 # Kanban Task Management Web App
 
-A Kanban-style task management web app built with **React**, **TypeScript**, and **Vite**. This project focuses on **routing and navigation**, **handling incorrect routes gracefully**, and **implementing protected routes**.
+This extends the kanban task manager to include real board and column management, context-based state, and a bunch of small UX touches, all built with **React**, **TypeScript**, and **Vite**. The project still focuses on **routing and navigation**, **handling incorrect routes gracefully**, and **implementing protected routes**, but now it feels much closer to a real app.
 
 ## Project focus
 
-### Routing and navigation
+### Kanban boards and state
 
-- **Single route config**: All routes are defined in [`src/routes/RouteProvider.tsx`](src/routes/RouteProvider.tsx) using React Router (`react-router`).
-- **Nested routes**: Main app routes use a shared [`Layout`](src/components/layout/Layout.tsx) (Header, Aside, theme toggle) with an `<Outlet />` for the current page. Dashboard, board view, and admin live under this layout; login and the 404 page are outside it (no sidebar/header).
-- **Navigation**: Pages use `<Link>` for navigation and `useNavigate` / `useParams` where needed (e.g. board ID from the URL).
+- **Boards, columns, and tasks**: The app now has real Kanban data instead of a static demo. Boards contain columns, columns contain tasks, and everything is wired through a central `BoardsContext` + `boardsReducer`.
+- **Create and edit flows**: You can add/edit boards, columns, and tasks via modals (`AddBoard`, `EditBoard`, `AddColumn`, `AddTask`, `EditTask`, `TaskDetails`). State updates in one place and the UI reflects it everywhere.
+- **Task details and subtasks**: A dedicated task details modal lets you see the full description, move tasks between columns, and toggle subtasks.
 
-### Handling incorrect routes gracefully
+### UI / UX layer
 
-- **Unknown URLs**: A catch-all route (`path="*"`) renders the [NotFound](src/pages/NotFound.tsx) page: “Page not found” plus a “Go to Dashboard” button so users can recover without leaving the app.
-- **Invalid board IDs**: For `/board/:boardId`, [BoardView](src/pages/BoardView.tsx) validates the param (numeric and in range). If the board doesn’t exist, it shows “Board not found” with a “Return to Dashboard” link instead of a broken or empty view.
+- **UI state management**: A `UiContext` keeps track of which modal is open, which board/task is selected, and handles global UI bits like the loading overlay and toast notifications.
+- **Shared layout and theming**: The main layout (header + sidebar) is shared across pages, with a theme toggle driven by `ThemeContext` so light/dark mode feels consistent.
 
-### Protected routes
+### Routing and auth
 
-- **[ProtectedRoute](src/components/ProtectedRoute.tsx)** wraps any route that requires authentication. It uses `useAuth()`; if the user is not logged in, it renders `<Navigate to="/login" replace />`. Otherwise it renders the child content.
-- Protected routes in this app: `/board/:boardId` and `/admin`. Unauthenticated users hitting these URLs are redirected to `/login`.
+- **Central route config**: Routes live in `RouteProvider`, using nested routes so the main layout wraps dashboard, board view, and admin while login/404 stay outside.
+- **Graceful error routes**: Unknown URLs go to a friendly 404 page, and invalid board IDs are handled inside `BoardView` with a “Board not found” message and a way back.
+- **Protected routes**: `ProtectedRoute` guards the board and admin views using `AuthContext`; unauthenticated users are redirected to `/login`.
 
 ## Screenshots
 
@@ -59,6 +60,12 @@ _Route: any unknown path (e.g. `/unknown-path`) — Catch-all route._
 ![Board not found](docs/screenshots/board-not-found.png)
 
 _Route: e.g. `/board/999` or `/board/abc` — Invalid board ID handled inside BoardView._
+
+## What I built
+
+This iteration turned the original routing-focused demo into a more complete Kanban task manager. I added proper board and column management with context-based state, built out modals for creating and editing tasks/columns/boards, and wired everything up to feel like a real app instead of a static example.
+
+Under the hood, I introduced `BoardsContext` and `UiContext` so the board data and UI state (modals, toasts, loading overlays) are managed in a single place and stay in sync across pages. I also refined the layout, improved the theme/auth contexts, and tightened up types to make the codebase easier to extend.
 
 ## Lessons learnt
 

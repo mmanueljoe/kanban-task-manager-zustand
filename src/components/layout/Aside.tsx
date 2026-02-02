@@ -1,7 +1,6 @@
 import { Link, useLocation } from 'react-router';
 import { useTheme } from '@hooks/useTheme';
-import boardsData from '@data/data.json';
-import type { BoardsData } from '@/types/types';
+import { useBoards } from '@/hooks/useBoards';
 
 import iconBoard from '@assets/icon-board.svg';
 import iconLight from '@assets/icon-light-theme.svg';
@@ -9,14 +8,13 @@ import iconDark from '@assets/icon-dark-theme.svg';
 import iconHideSidebar from '@assets/icon-hide-sidebar.svg';
 import logoMobile from '@assets/logo-mobile.svg';
 
-const boards = (boardsData as BoardsData).boards;
-
 type AsideProps = {
   onHideSidebar: () => void;
 };
 
 export function Aside({ onHideSidebar }: AsideProps) {
   const location = useLocation();
+  const { boards } = useBoards();
   const { theme, setTheme } = useTheme();
 
   return (
