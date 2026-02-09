@@ -3,7 +3,7 @@ import { useBoards } from '@/hooks/useBoards';
 import { useCurrentBoard } from '@/hooks/useCurrentBoard';
 import { Button } from '@components/ui/Button';
 import type { Task } from '@/types/types';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo, memo } from 'react';
 import { TaskDetailsModal } from '@components/modals/TaskDetailsModal';
 import { AddColumnModal } from '@components/modals/AddColumnModal';
 import {
@@ -24,7 +24,6 @@ const COLUMN_DOT_COLORS = [
   '#2A3FDB',
 ];
 
-/** Encode draggable id: boardIndex::columnName::taskTitle (taskTitle may contain ::) */
 function encodeTaskId(
   boardIndex: number,
   columnName: string,
@@ -43,7 +42,6 @@ function decodeTaskId(
     taskTitle: parts.slice(2).join('::'),
   };
 }
-/** Encode droppable column id: boardIndex::columnName */
 function encodeColumnId(boardIndex: number, columnName: string) {
   return `${boardIndex}::${columnName}`;
 }
@@ -55,8 +53,7 @@ function decodeColumnId(
   return { boardIndex: parseInt(parts[0], 10), columnName: parts[1] };
 }
 
-/** UPDATED: Draggable task card. Id encodes boardIndex, column, taskTitle so we can dispatch MOVE_TASK on drop. */
-function DraggableTask({
+const DraggableTask = memo(function DraggableTask({
   boardIndex,
   columnName,
   task,
@@ -86,10 +83,9 @@ function DraggableTask({
       <p className="app-board-task-subtasks">{subtaskSummary(task)}</p>
     </li>
   );
-}
+});
 
-/** UPDATED: Droppable column. Id encodes boardIndex and columnName so we know where the task was dropped. */
-function DroppableColumn({
+const DroppableColumn = memo(function DroppableColumn({
   boardIndex,
   columnName,
   columnIndex,
@@ -128,7 +124,7 @@ function DroppableColumn({
       <ul className="app-board-tasks">{children}</ul>
     </section>
   );
-}
+});
 
 export function BoardView() {
   const [selectedTask, setSelectedTask] = useState<{
@@ -174,6 +170,27 @@ export function BoardView() {
     },
     [boardIndex, dispatch]
   );
+
+  const taskCallbacks = useMemo(() => {
+    if (!board || !board.columns) {
+      return new Map<string, () => void>();
+    }
+    const callbacks = new Map<string, () => void>();
+    board.columns.forEach((col) => {
+      col.tasks.forEach((task) => {
+        const key = `${col.name}::${task.title}`;
+        callbacks.set(key, () => {
+          setSelectedTask({
+            boardIndex,
+            columnName: col.name,
+            taskTitle: task.title,
+          });
+          setTaskModalOpen(true);
+        });
+      });
+    });
+    return callbacks;
+  }, [board, boardIndex]);
 
   if (!board) {
     return (
@@ -230,23 +247,20 @@ export function BoardView() {
               columnIndex={colIndex}
               taskCount={col.tasks.length}
             >
-              {col.tasks.map((task) => (
-                <DraggableTask
-                  key={task.title}
-                  boardIndex={boardIndex!}
-                  columnName={col.name}
-                  task={task}
-                  subtaskSummary={subtaskSummary}
-                  onOpenDetails={() => {
-                    setSelectedTask({
-                      boardIndex,
-                      columnName: col.name,
-                      taskTitle: task.title,
-                    });
-                    setTaskModalOpen(true);
-                  }}
-                />
-              ))}
+              {col.tasks.map((task) => {
+                const callbackKey = `${col.name}::${task.title}`;
+                const onOpenDetails = taskCallbacks.get(callbackKey);
+                return (
+                  <DraggableTask
+                    key={task.title}
+                    boardIndex={boardIndex!}
+                    columnName={col.name}
+                    task={task}
+                    subtaskSummary={subtaskSummary}
+                    onOpenDetails={onOpenDetails || (() => {})}
+                  />
+                );
+              })}
             </DroppableColumn>
           ))}
           <button

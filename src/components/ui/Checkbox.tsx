@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { InputHTMLAttributes } from 'react';
 import iconCheck from '@assets/icon-check.svg';
 
@@ -7,7 +8,8 @@ type CheckboxProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
   onCheckedChange?: (checked: boolean) => void;
 };
 
-export function Checkbox({
+// OPTIMIZATION: Memoized to prevent unnecessary re-renders
+export const Checkbox = memo(function Checkbox({
   label,
   checked,
   onCheckedChange,
@@ -38,4 +40,4 @@ export function Checkbox({
       </span>
     </label>
   );
-}
+});

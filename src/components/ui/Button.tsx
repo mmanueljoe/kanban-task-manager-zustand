@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { ButtonHTMLAttributes } from 'react';
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -6,7 +7,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   size?: 'large' | 'small';
 };
 
-export function Button({
+export const Button = memo(function Button({
   children,
   variant = 'primary',
   size = 'large',
@@ -23,4 +24,4 @@ export function Button({
       {children}
     </button>
   );
-}
+});

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import iconChevronDown from '@assets/icon-chevron-down.svg';
 
 type DropdownOption = { value: string; label: string };
@@ -11,7 +11,8 @@ type DropdownProps = {
   className?: string;
 };
 
-export function Dropdown({
+// OPTIMIZATION: Memoized to prevent unnecessary re-renders
+export const Dropdown = memo(function Dropdown({
   options,
   value,
   onChange,
@@ -76,4 +77,4 @@ export function Dropdown({
       )}
     </div>
   );
-}
+});

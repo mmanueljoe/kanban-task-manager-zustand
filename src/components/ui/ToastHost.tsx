@@ -1,22 +1,21 @@
 import { useEffect } from 'react';
 import type { UiToast } from '@/types/types';
-import { useUi } from '@hooks/useUi';
+import { useStore } from '@/store/useStore';
 
 const AUTO_DISMISS_MS = 4000;
 
 type ToastProps = {
   toast: UiToast;
+  onDismiss: (id: string) => void;
 };
 
-function Toast({ toast }: ToastProps) {
-  const { dismissToast } = useUi();
-
+function Toast({ toast, onDismiss }: ToastProps) {
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      dismissToast(toast.id);
+      onDismiss(toast.id);
     }, AUTO_DISMISS_MS);
     return () => window.clearTimeout(timer);
-  }, [dismissToast, toast.id]);
+  }, [onDismiss, toast.id]);
 
   const background =
     toast.type === 'success'
@@ -55,7 +54,7 @@ function Toast({ toast }: ToastProps) {
       <button
         type="button"
         aria-label="Dismiss notification"
-        onClick={() => dismissToast(toast.id)}
+        onClick={() => onDismiss(toast.id)}
         style={{
           border: 'none',
           background: 'transparent',
@@ -73,9 +72,8 @@ function Toast({ toast }: ToastProps) {
 }
 
 export function ToastHost() {
-  const {
-    state: { toasts },
-  } = useUi();
+  const toasts = useStore((state) => state.toasts);
+  const dismissToast = useStore((state) => state.removeToast);
 
   if (toasts.length === 0) return null;
 
@@ -92,7 +90,7 @@ export function ToastHost() {
       }}
     >
       {toasts.map((toast) => (
-        <Toast key={toast.id} toast={toast} />
+        <Toast key={toast.id} toast={toast} onDismiss={dismissToast} />
       ))}
     </div>
   );

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, memo, useMemo } from 'react';
 import { useBoards } from '@/hooks/useBoards';
 import { useCurrentBoard } from '@/hooks/useCurrentBoard';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,6 +17,42 @@ type HeaderProps = {
   onDeleteBoard?: () => void;
   canEditBoard?: boolean;
 };
+
+const BoardDropdownItem = memo(function BoardDropdownItem({
+  boardName,
+  index,
+  isActive,
+  onSelect,
+}: {
+  boardName: string;
+  index: number;
+  isActive: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <li>
+      <Link
+        to={`/board/${index}`}
+        className={`app-board-dropdown-item ${isActive ? 'active' : ''}`}
+        onClick={onSelect}
+      >
+        <img
+          src={iconBoard}
+          alt=""
+          width={16}
+          height={16}
+          style={{
+            display: 'inline-block',
+            marginRight: 12,
+            verticalAlign: 'middle',
+            opacity: isActive ? 1 : 0.5,
+          }}
+        />
+        {boardName}
+      </Link>
+    </li>
+  );
+});
 
 export function Header({
   onAddTask,
@@ -51,8 +87,10 @@ export function Header({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen, accountMenuOpen]);
 
-  const currentBoardName =
-    board != null && boardIndex != null ? board.name : 'Boards';
+  const currentBoardName = useMemo(
+    () => (board != null && boardIndex != null ? board.name : 'Boards'),
+    [board?.name, boardIndex]
+  );
 
   const handleLogout = () => {
     logout();
@@ -135,27 +173,13 @@ export function Header({
               </p>
               <ul className="app-board-dropdown-list">
                 {boards.map((board, index) => (
-                  <li key={board.name}>
-                    <Link
-                      to={`/board/${index}`}
-                      className={`app-board-dropdown-item ${boardIndex === index ? 'active' : ''}`}
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <img
-                        src={iconBoard}
-                        alt=""
-                        width={16}
-                        height={16}
-                        style={{
-                          display: 'inline-block',
-                          marginRight: 12,
-                          verticalAlign: 'middle',
-                          opacity: boardIndex === index ? 1 : 0.5,
-                        }}
-                      />
-                      {board.name}
-                    </Link>
-                  </li>
+                  <BoardDropdownItem
+                    key={board.name}
+                    boardName={board.name}
+                    index={index}
+                    isActive={boardIndex === index}
+                    onSelect={() => setDropdownOpen(false)}
+                  />
                 ))}
                 <li>
                   <button

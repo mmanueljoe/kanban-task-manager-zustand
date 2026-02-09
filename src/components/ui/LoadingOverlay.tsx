@@ -1,9 +1,9 @@
-import { useUi } from '@hooks/useUi';
+import { useStore } from '@/store/useStore';
 
 export function LoadingOverlay() {
-  const { state } = useUi();
+  const loadingKeys = useStore((state) => state.loadingKeys);
 
-  if (state.loadingKeys.length === 0) return null;
+  if (loadingKeys.length === 0) return null;
 
   return (
     <div

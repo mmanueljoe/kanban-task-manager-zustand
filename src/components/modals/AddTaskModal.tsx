@@ -3,7 +3,7 @@ import { Modal } from '@components/ui/Modal';
 import { Button } from '@components/ui/Button';
 import { Dropdown } from '@components/ui/Dropdown';
 import iconCross from '@assets/icon-cross.svg';
-import { useBoards } from '@/hooks/useBoards';
+import { useStore } from '@/store/useStore';
 import { useUi } from '@/hooks/useUi';
 import type { Task } from '@/types/types';
 
@@ -20,7 +20,7 @@ export function AddTaskModal({
   columnOptions,
   boardIndex,
 }: AddTaskModalProps) {
-  const { dispatch } = useBoards();
+  const dispatch = useStore((state) => state.dispatch);
   const { startLoading, stopLoading, showToast } = useUi();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');

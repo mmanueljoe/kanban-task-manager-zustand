@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router';
+import { useState, useMemo } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Header } from '@components/layout/Header';
 import { Aside } from '@components/layout/Aside';
 import { AddTaskModal } from '@components/modals/AddTaskModal';
@@ -8,6 +9,47 @@ import { DeleteBoardModal } from '@components/modals/DeleteBoardModal';
 import { AddBoardModal } from '@components/modals/AddBoardModal';
 import { useCurrentBoard } from '@/hooks/useCurrentBoard';
 import iconShowSidebar from '@assets/icon-show-sidebar.svg';
+
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+  },
+  exit: {
+    opacity: 0,
+    y: -20,
+  },
+};
+
+const pageTransition = {
+  type: 'tween' as const,
+  ease: 'easeInOut' as const,
+  duration: 0.3,
+};
+
+function AnimatedOutlet() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        variants={pageVariants}
+        transition={pageTransition}
+        style={{ width: '100%', height: '100%' }}
+      >
+        <Outlet />
+      </motion.div>
+    </AnimatePresence>
+  );
+}
 
 export function Layout() {
   const { board, boardIndex } = useCurrentBoard();
@@ -20,8 +62,12 @@ export function Layout() {
 
   const currentBoard = board;
 
-  const columnOptions =
-    currentBoard?.columns.map((c) => ({ value: c.name, label: c.name })) ?? [];
+  const columnOptions = useMemo(
+    () =>
+      currentBoard?.columns.map((c) => ({ value: c.name, label: c.name })) ??
+      [],
+    [currentBoard?.columns]
+  );
 
   return (
     <div
@@ -49,7 +95,7 @@ export function Layout() {
           canEditBoard={currentBoard != null}
         />
         <main className="app-layout-main">
-          <Outlet />
+          <AnimatedOutlet />
         </main>
       </div>
       <AddBoardModal

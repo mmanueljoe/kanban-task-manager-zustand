@@ -1,11 +1,53 @@
-import { Route, Routes } from 'react-router';
+import { Route, Routes, useLocation } from 'react-router';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Layout } from '@components/layout/Layout';
+import { Login } from '@pages/Login';
+import { NotFound } from '@pages/NotFound';
 import { Dashboard } from '@pages/Dashboard';
 import { BoardView } from '@pages/BoardView';
-import { Login } from '@pages/Login';
 import { Admin } from '@pages/Admin';
-import { NotFound } from '@pages/NotFound';
 import { ProtectedRoute } from '@components/ProtectedRoute';
+
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+  },
+  exit: {
+    opacity: 0,
+    y: -20,
+  },
+};
+
+const pageTransition = {
+  type: 'tween' as const,
+  ease: 'easeInOut' as const,
+  duration: 0.3,
+};
+
+function AnimatedPage({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        variants={pageVariants}
+        transition={pageTransition}
+        style={{ width: '100%', minHeight: '100vh' }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
+}
 
 export function RouteProvider() {
   return (
@@ -29,8 +71,22 @@ export function RouteProvider() {
           }
         />
       </Route>
-      <Route path="/login" element={<Login />} />
-      <Route path="*" element={<NotFound />} />
+      <Route
+        path="/login"
+        element={
+          <AnimatedPage>
+            <Login />
+          </AnimatedPage>
+        }
+      />
+      <Route
+        path="*"
+        element={
+          <AnimatedPage>
+            <NotFound />
+          </AnimatedPage>
+        }
+      />
     </Routes>
   );
 }

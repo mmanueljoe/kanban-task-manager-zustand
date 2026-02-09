@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Modal } from '@components/ui/Modal';
 import { Button } from '@components/ui/Button';
 import iconCross from '@assets/icon-cross.svg';
-import { useBoards } from '@/hooks/useBoards';
+import { useStore } from '@/store/useStore';
 import { useUi } from '@/hooks/useUi';
 import type { Board } from '@/types/types';
 
@@ -23,7 +23,7 @@ export function EditBoardModal({
   boardIndex,
   originalBoard,
 }: EditBoardModalProps) {
-  const { dispatch } = useBoards();
+  const dispatch = useStore((state) => state.dispatch);
   const { startLoading, stopLoading, showToast } = useUi();
   const [name, setName] = useState(initialName);
   const [columns, setColumns] = useState(initialColumns);

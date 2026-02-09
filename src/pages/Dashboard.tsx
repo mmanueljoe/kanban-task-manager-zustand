@@ -1,6 +1,33 @@
 import { Link } from 'react-router';
+import { memo } from 'react';
 import { Button } from '@components/ui/Button';
 import { useBoards } from '@/hooks/useBoards';
+
+export const BoardCard = memo(function BoardCard({
+  boardName,
+  columnCount,
+  index,
+}: {
+  boardName: string;
+  columnCount: number;
+  index: number;
+}) {
+  return (
+    <Link to={`/board/${index}`} className="app-board-card">
+      <span className="heading-m">{boardName}</span>
+      <span
+        className="body-l"
+        style={{
+          display: 'block',
+          marginTop: 4,
+          color: 'var(--text-muted)',
+        }}
+      >
+        {columnCount} columns
+      </span>
+    </Link>
+  );
+});
 
 export function Dashboard() {
   const { boards } = useBoards();
@@ -26,23 +53,12 @@ export function Dashboard() {
       </p>
       <div className="app-stack-4" style={{ marginTop: 24 }}>
         {boards.map((board, index) => (
-          <Link
+          <BoardCard
             key={board.name}
-            to={`/board/${index}`}
-            className="app-board-card"
-          >
-            <span className="heading-m">{board.name}</span>
-            <span
-              className="body-l"
-              style={{
-                display: 'block',
-                marginTop: 4,
-                color: 'var(--text-muted)',
-              }}
-            >
-              {board.columns.length} columns
-            </span>
-          </Link>
+            boardName={board.name}
+            columnCount={board.columns.length}
+            index={index}
+          />
         ))}
       </div>
     </div>

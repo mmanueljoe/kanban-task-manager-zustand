@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router';
 import { useBoards } from '@/hooks/useBoards';
 import { ThemeToggle } from '@components/ui/ThemeToggle';
+import { memo } from 'react';
 
 import iconBoard from '@assets/icon-board.svg';
 import iconHideSidebar from '@assets/icon-hide-sidebar.svg';
@@ -10,6 +11,26 @@ type AsideProps = {
   onHideSidebar: () => void;
   onCreateBoard: () => void;
 };
+
+const BoardLink = memo(function BoardLink({
+  boardName,
+  index,
+  isActive,
+}: {
+  boardName: string;
+  index: number;
+  isActive: boolean;
+}) {
+  return (
+    <Link
+      to={`/board/${index}`}
+      className={`app-aside-link ${isActive ? 'active' : ''}`}
+    >
+      <img src={iconBoard} alt="" width={16} height={16} aria-hidden />
+      {boardName}
+    </Link>
+  );
+});
 
 export function Aside({ onHideSidebar, onCreateBoard }: AsideProps) {
   const location = useLocation();
@@ -29,14 +50,12 @@ export function Aside({ onHideSidebar, onCreateBoard }: AsideProps) {
       <p className="heading-s app-aside-title">ALL BOARDS ({boards.length})</p>
       <nav className="app-aside-nav">
         {boards.map((board, index) => (
-          <Link
+          <BoardLink
             key={board.name}
-            to={`/board/${index}`}
-            className={`app-aside-link ${location.pathname === `/board/${index}` ? 'active' : ''}`}
-          >
-            <img src={iconBoard} alt="" width={16} height={16} aria-hidden />
-            {board.name}
-          </Link>
+            boardName={board.name}
+            index={index}
+            isActive={location.pathname === `/board/${index}`}
+          />
         ))}
         <button
           type="button"

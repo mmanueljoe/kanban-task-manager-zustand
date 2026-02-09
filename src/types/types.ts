@@ -130,3 +130,11 @@ export type UiContextType = {
   isLoading: (key?: string) => boolean;
   dismissToast: (id: string) => void;
 };
+
+export type UiActionsType = {
+  showToast: (params: Omit<UiToast, 'id'>) => void;
+  startLoading: (key: string) => void;
+  stopLoading: (key: string) => void;
+  isLoading: (key?: string) => boolean;
+  dismissToast: (id: string) => void;
+};

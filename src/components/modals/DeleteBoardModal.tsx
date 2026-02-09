@@ -1,6 +1,6 @@
 import { Modal } from '@components/ui/Modal';
 import { Button } from '@components/ui/Button';
-import { useBoards } from '@/hooks/useBoards';
+import { useStore } from '@/store/useStore';
 import { useUi } from '@/hooks/useUi';
 
 type DeleteBoardModalProps = {
@@ -18,7 +18,7 @@ export function DeleteBoardModal({
   boardName,
   boardIndex,
 }: DeleteBoardModalProps) {
-  const { dispatch } = useBoards();
+  const dispatch = useStore((state) => state.dispatch);
   const { startLoading, stopLoading, showToast } = useUi();
   const handleConfirm = () => {
     if (boardIndex == null) {

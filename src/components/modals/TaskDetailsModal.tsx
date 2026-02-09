@@ -1,9 +1,10 @@
-import { useBoards } from '@/hooks/useBoards';
+import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useUi } from '@/hooks/useUi';
 import type { TaskDetailsModalProps } from '@/types/types';
 import { Modal } from '../ui/Modal';
 import { Checkbox } from '../ui/Checkbox';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import iconEllipsis from '@assets/icon-vertical-ellipsis.svg';
 
 export function TaskDetailsModal({
@@ -13,14 +14,30 @@ export function TaskDetailsModal({
   columnName,
   taskTitle,
 }: TaskDetailsModalProps) {
-  const { boards, dispatch } = useBoards();
+  const board = useStore(
+    useShallow((state) => {
+      if (
+        boardIndex === null ||
+        boardIndex < 0 ||
+        boardIndex >= state.boards.length
+      ) {
+        return null;
+      }
+      return state.boards[boardIndex];
+    })
+  );
+
+  const dispatch = useStore((state) => state.dispatch);
   const { startLoading, stopLoading, showToast } = useUi();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const board = boardIndex !== null ? boards[boardIndex] : null;
-  const column = board?.columns.find((c) => c.name === columnName);
-  const task = column?.tasks.find((t) => t.title === taskTitle);
+  const { task } = useMemo(() => {
+    const col = board?.columns.find((c) => c.name === columnName);
+    const t = col?.tasks.find((t) => t.title === taskTitle);
+    return { column: col, task: t };
+  }, [board, columnName, taskTitle]);
 
   useEffect(() => {
     if (!menuOpen) return;
