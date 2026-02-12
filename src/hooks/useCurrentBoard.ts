@@ -14,8 +14,6 @@ export function useCurrentBoard(): UseCurrentBoardResult {
   const index =
     boardId != null && /^\d+$/.test(boardId) ? parseInt(boardId, 10) : null;
 
-  // OPTIMIZATION: Subscribe only to the specific board, not all boards
-  // This prevents re-renders when other boards change
   const board = useStore(
     useShallow((state) => {
       if (

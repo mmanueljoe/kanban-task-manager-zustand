@@ -1,24 +1,4 @@
-import { RouteProvider } from '@routes/RouteProvider';
-import { useTheme } from '@hooks/useTheme';
-import { UiProvider } from '@context/UiContext';
-import { StoreHydration } from '@store/StoreHydration';
-import { ToastHost } from '@components/ui/ToastHost';
-import { LoadingOverlay } from '@components/ui/LoadingOverlay';
-
-function AppContent() {
-  const { theme } = useTheme();
-  return (
-    <div data-theme={theme} className="app-root">
-      <UiProvider>
-        <StoreHydration>
-          <RouteProvider />
-        </StoreHydration>
-        <LoadingOverlay />
-        <ToastHost />
-      </UiProvider>
-    </div>
-  );
-}
+import { AppContent } from '@components/AppContent';
 
 export default function App() {
   return <AppContent />;
