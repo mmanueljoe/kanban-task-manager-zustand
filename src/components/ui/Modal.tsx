@@ -43,10 +43,12 @@ export function Modal({
     </div>
   );
 
-  // Render the modal at the document body level so it always
-  // covers the full viewport and isn't clipped by layout containers.
   if (typeof document !== 'undefined') {
-    return createPortal(modalContent, document.body);
+    const appRoot = document.querySelector('.app-root');
+    return createPortal(
+      modalContent,
+      (appRoot as HTMLElement) ?? document.body
+    );
   }
 
   return modalContent;
