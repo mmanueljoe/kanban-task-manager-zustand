@@ -15,16 +15,7 @@ export const BoardCard = memo(function BoardCard({
   return (
     <Link to={`/board/${index}`} className="app-board-card">
       <span className="heading-m">{boardName}</span>
-      <span
-        className="body-l"
-        style={{
-          display: 'block',
-          marginTop: 4,
-          color: 'var(--text-muted)',
-        }}
-      >
-        {columnCount} columns
-      </span>
+      <span className="body-l app-board-card-meta">{columnCount} columns</span>
     </Link>
   );
 });
@@ -51,7 +42,7 @@ export function Dashboard() {
       <p className="body-l text-primary">
         Select a board from the sidebar or below.
       </p>
-      <div className="app-stack-4" style={{ marginTop: 24 }}>
+      <div className="app-stack-4 app-stack-4-margin-top">
         {boards.map((board, index) => (
           <BoardCard
             key={board.name}

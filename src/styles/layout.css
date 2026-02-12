@@ -97,6 +97,9 @@
     flex-direction: column;
     gap: 16px;
   }
+  .app-stack-4-margin-top {
+    margin-top: 24px;
+  }
   .app-stack-2 {
     display: flex;
     flex-direction: column;

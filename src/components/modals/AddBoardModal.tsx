@@ -84,7 +84,7 @@ export function AddBoardModal({ open, onClose }: AddBoardModalProps) {
     <Modal open={open} onClose={onClose} aria-label="Add board">
       <h2 className="app-modal-title">Add New Board</h2>
       <form onSubmit={handleSubmit}>
-        <div className="input-wrap" style={{ marginBottom: 24 }}>
+        <div className="input-wrap app-modal-field">
           <label className="input-label">Board Name</label>
           <input
             type="text"
@@ -94,41 +94,23 @@ export function AddBoardModal({ open, onClose }: AddBoardModalProps) {
             placeholder="e.g. Platform Launch"
           />
         </div>
-        <div style={{ marginBottom: 24 }}>
-          <label
-            className="input-label"
-            style={{ display: 'block', marginBottom: 8 }}
-          >
+        <div className="app-modal-sublist">
+          <label className="input-label app-modal-sublist-label">
             Board Columns
           </label>
           {columns.map((val, i) => (
-            <div
-              key={i}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                marginBottom: 8,
-              }}
-            >
+            <div key={i} className="app-modal-sublist-row">
               <input
                 type="text"
-                className="input"
+                className="input app-modal-sublist-input"
                 value={val}
                 onChange={(e) => updateColumn(i, e.target.value)}
-                style={{ flex: 1 }}
               />
               <button
                 type="button"
                 onClick={() => removeColumn(i)}
                 aria-label="Remove column"
-                style={{
-                  padding: 8,
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--text-muted)',
-                }}
+                className="app-icon-button"
               >
                 <img src={iconCross} alt="" width={14} height={14} />
               </button>
@@ -139,7 +121,7 @@ export function AddBoardModal({ open, onClose }: AddBoardModalProps) {
             variant="secondary"
             size="large"
             onClick={addColumn}
-            style={{ width: '100%' }}
+            className="btn-block"
           >
             + Add New Column
           </Button>

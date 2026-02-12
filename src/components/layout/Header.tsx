@@ -41,12 +41,7 @@ const BoardDropdownItem = memo(function BoardDropdownItem({
           alt=""
           width={16}
           height={16}
-          style={{
-            display: 'inline-block',
-            marginRight: 12,
-            verticalAlign: 'middle',
-            opacity: isActive ? 1 : 0.5,
-          }}
+          className={`app-board-dropdown-icon ${isActive ? '' : 'app-board-dropdown-icon--inactive'}`}
         />
         {boardName}
       </Link>
@@ -133,25 +128,13 @@ export function Header({
           aria-expanded={dropdownOpen}
           aria-haspopup="true"
         >
-          <span
-            style={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {currentBoardName}
-          </span>
+          <span className="app-header-board-current">{currentBoardName}</span>
           <img
             src={iconChevronDown}
             alt=""
             width={10}
             height={7}
-            style={{
-              transform: dropdownOpen ? 'rotate(180deg)' : 'none',
-              transition: 'transform 0.2s',
-              flexShrink: 0,
-            }}
+            className={`app-header-board-chevron ${dropdownOpen ? 'app-header-board-chevron--open' : ''}`}
           />
         </button>
         <span className="app-header-board-name" title={currentBoardName}>
@@ -228,57 +211,23 @@ export function Header({
           />
           <span className="app-header-add-label">+ Add New Task</span>
         </button>
-        <div ref={accountMenuRef} style={{ position: 'relative' }}>
+        <div ref={accountMenuRef} className="app-menu-anchor">
           <button
             type="button"
             aria-label="Account menu"
             aria-expanded={accountMenuOpen}
             aria-haspopup="true"
             onClick={() => setAccountMenuOpen((open) => !open)}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 999,
-              border: '1px solid var(--lines)',
-              background: 'var(--bg-main)',
-              color: 'var(--text-primary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: 'pointer',
-              marginRight: 4,
-            }}
+            className="app-account-button"
           >
             {userInitial}
           </button>
           {accountMenuOpen && (
-            <div
-              role="menu"
-              style={{
-                position: 'absolute',
-                top: '100%',
-                right: 0,
-                marginTop: 8,
-                minWidth: 160,
-                padding: 8,
-                borderRadius: 8,
-                background: 'var(--bg-main)',
-                border: '1px solid var(--lines)',
-                boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                zIndex: 20,
-              }}
-            >
+            <div role="menu" className="app-menu-panel">
               <button
                 type="button"
                 role="menuitem"
-                className="dropdown-option"
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  textAlign: 'left',
-                }}
+                className="dropdown-option app-menu-item"
                 onClick={() => {
                   setAccountMenuOpen(false);
                   void navigate('/admin');
@@ -289,13 +238,7 @@ export function Header({
               <button
                 type="button"
                 role="menuitem"
-                className="dropdown-option"
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  textAlign: 'left',
-                  color: 'var(--destructive)',
-                }}
+                className="dropdown-option app-menu-item app-menu-item--danger"
                 onClick={() => {
                   setAccountMenuOpen(false);
                   handleLogout();
@@ -306,45 +249,23 @@ export function Header({
             </div>
           )}
         </div>
-        <div ref={menuRef} style={{ position: 'relative' }}>
+        <div ref={menuRef} className="app-menu-anchor">
           <button
             type="button"
             aria-label="More options"
             aria-expanded={menuOpen}
             aria-haspopup="true"
             onClick={() => setMenuOpen((o) => !o)}
-            style={{
-              padding: 10,
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'var(--text-muted)',
-            }}
+            className="app-menu-trigger"
           >
             <img src={iconEllipsis} alt="" width={5} height={20} />
           </button>
           {menuOpen && canEditBoard && (
-            <div
-              role="menu"
-              style={{
-                position: 'absolute',
-                top: '100%',
-                right: 0,
-                marginTop: 8,
-                minWidth: 192,
-                padding: 8,
-                borderRadius: 8,
-                background: 'var(--bg-main)',
-                border: '1px solid var(--lines)',
-                boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                zIndex: 20,
-              }}
-            >
+            <div role="menu" className="app-menu-panel app-menu-panel--wide">
               <button
                 type="button"
                 role="menuitem"
-                className="dropdown-option"
-                style={{ display: 'block', width: '100%', textAlign: 'left' }}
+                className="dropdown-option app-menu-item"
                 onClick={() => {
                   onEditBoard?.();
                   setMenuOpen(false);
@@ -355,13 +276,7 @@ export function Header({
               <button
                 type="button"
                 role="menuitem"
-                className="dropdown-option"
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  textAlign: 'left',
-                  color: 'var(--destructive)',
-                }}
+                className="dropdown-option app-menu-item app-menu-item--danger"
                 onClick={() => {
                   onDeleteBoard?.();
                   setMenuOpen(false);

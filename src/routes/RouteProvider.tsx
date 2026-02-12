@@ -41,7 +41,7 @@ function AnimatedPage({ children }: { children: React.ReactNode }) {
         exit="exit"
         variants={pageVariants}
         transition={pageTransition}
-        style={{ width: '100%', minHeight: '100vh' }}
+        className="app-animated-page"
       >
         {children}
       </motion.div>

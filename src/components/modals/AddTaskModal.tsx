@@ -74,7 +74,7 @@ export function AddTaskModal({
     <Modal open={open} onClose={onClose} aria-label="Add new task">
       <h2 className="app-modal-title">Add New Task</h2>
       <form onSubmit={handleSubmit}>
-        <div className="input-wrap" style={{ marginBottom: 24 }}>
+        <div className="input-wrap app-modal-field">
           <label className="input-label">Title</label>
           <input
             type="text"
@@ -84,55 +84,36 @@ export function AddTaskModal({
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
-        <div className="input-wrap" style={{ marginBottom: 24 }}>
+        <div className="input-wrap app-modal-field">
           <label className="input-label">Description</label>
           <textarea
-            className="input"
+            className="input input-textarea"
             placeholder="e.g. It's always good to take a break. This 15 minute break will recharge the batteries a little."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            style={{ resize: 'vertical', minHeight: 80 }}
           />
         </div>
-        <div style={{ marginBottom: 24 }}>
-          <label
-            className="input-label"
-            style={{ display: 'block', marginBottom: 8 }}
-          >
+        <div className="app-modal-sublist">
+          <label className="input-label app-modal-sublist-label">
             Subtasks
           </label>
           {subtasks.map((val, i) => (
-            <div
-              key={i}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                marginBottom: 8,
-              }}
-            >
+            <div key={i} className="app-modal-sublist-row">
               <input
                 type="text"
-                className="input"
+                className="input app-modal-sublist-input"
                 placeholder={
                   i === 0 ? 'e.g. Make coffee.' : 'e.g. Drink coffee & smile.'
                 }
                 value={val}
                 onChange={(e) => updateSubtask(i, e.target.value)}
-                style={{ flex: 1 }}
               />
               <button
                 type="button"
                 onClick={() => removeSubtask(i)}
                 aria-label="Remove subtask"
-                style={{
-                  padding: 8,
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--text-muted)',
-                }}
+                className="app-icon-button"
               >
                 <img src={iconCross} alt="" width={14} height={14} />
               </button>
@@ -143,12 +124,12 @@ export function AddTaskModal({
             variant="secondary"
             size="large"
             onClick={addSubtask}
-            style={{ width: '100%' }}
+            className="btn-block"
           >
             + Add New Subtask
           </Button>
         </div>
-        <div className="input-wrap" style={{ marginBottom: 24 }}>
+        <div className="input-wrap app-modal-field">
           <label className="input-label">Status</label>
           <Dropdown
             options={columnOptions}

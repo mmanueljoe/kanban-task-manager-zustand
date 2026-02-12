@@ -28,42 +28,13 @@ function Toast({ toast, onDismiss }: ToastProps) {
     toast.type === 'error' ? 'var(--destructive)' : 'var(--text-primary)';
 
   return (
-    <div
-      className="app-toast"
-      style={{
-        minWidth: 240,
-        maxWidth: 360,
-        padding: '12px 16px',
-        borderRadius: 8,
-        background,
-        color,
-        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.2)',
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        gap: 12,
-        border: '1px solid var(--lines)',
-      }}
-    >
-      <span
-        className="body-m"
-        style={{ marginRight: 8, wordBreak: 'break-word' }}
-      >
-        {toast.message}
-      </span>
+    <div className="app-toast" style={{ background, color }}>
+      <span className="body-m app-toast-message">{toast.message}</span>
       <button
         type="button"
+        className="app-toast-dismiss"
         aria-label="Dismiss notification"
         onClick={() => onDismiss(toast.id)}
-        style={{
-          border: 'none',
-          background: 'transparent',
-          color: 'var(--text-muted)',
-          cursor: 'pointer',
-          fontSize: 14,
-          padding: 0,
-          lineHeight: 1,
-        }}
       >
         ×
       </button>
@@ -78,17 +49,7 @@ export function ToastHost() {
   if (toasts.length === 0) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        right: 16,
-        bottom: 16,
-        zIndex: 120,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-      }}
-    >
+    <div className="app-toast-container">
       {toasts.map((toast) => (
         <Toast key={toast.id} toast={toast} onDismiss={dismissToast} />
       ))}

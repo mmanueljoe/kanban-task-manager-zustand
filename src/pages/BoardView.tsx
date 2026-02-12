@@ -213,9 +213,7 @@ export function BoardView() {
           <h2 className="heading-l">
             This board is empty. Create a new column to get started.
           </h2>
-          <p className="body-l" style={{ marginBottom: 24 }}>
-            Create a new column to get started.
-          </p>
+          <p className="body-l">Create a new column to get started.</p>
           <Button
             variant="primary"
             size="large"

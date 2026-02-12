@@ -43,6 +43,57 @@
   .app-modal-delete-title {
     color: var(--destructive);
   }
+  /* Generic modal layout helpers */
+  .app-modal-field {
+    margin-bottom: 24px;
+  }
+  .app-modal-sublist {
+    margin-bottom: 24px;
+  }
+  .app-modal-sublist-label {
+    display: block;
+    margin-bottom: 8px;
+  }
+  .app-modal-sublist-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .app-modal-sublist-input {
+    flex: 1;
+  }
+  .app-modal-status-display {
+    cursor: default;
+  }
+  .app-modal-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    gap: 16px;
+  }
+  .app-modal-header-title {
+    flex: 1;
+    margin: 0;
+  }
+  .app-modal-description {
+    margin-bottom: 24px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .app-modal-section {
+    margin-bottom: 24px;
+  }
+  .app-modal-subtasks-label {
+    display: block;
+    margin-bottom: 16px;
+  }
+  .app-modal-subtasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
   @keyframes app-fade-in {
     from {
       opacity: 0;

@@ -19,11 +19,7 @@ export function Login() {
   return (
     <div className="app-main">
       <h1 className="heading-xl app-section-title">Log in</h1>
-      <form
-        onSubmit={handleSubmit}
-        className="app-stack-4"
-        style={{ maxWidth: 320 }}
-      >
+      <form onSubmit={handleSubmit} className="app-stack-4 app-login-form">
         <Button type="submit" variant="primary" size="large">
           Log in (mock)
         </Button>

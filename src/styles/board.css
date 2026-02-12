@@ -167,4 +167,9 @@
   .app-board-card:hover {
     border-color: var(--primary);
   }
+  .app-board-card-meta {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-muted);
+  }
 }

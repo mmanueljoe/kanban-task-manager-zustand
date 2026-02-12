@@ -50,7 +50,7 @@ export function AddColumnModal({
     <Modal open={open} onClose={onClose} aria-label="Add column">
       <h2 className="app-modal-title">Add New Column</h2>
       <form onSubmit={handleSubmit}>
-        <div className="input-wrap" style={{ marginBottom: 24 }}>
+        <div className="input-wrap app-modal-field">
           <label className="input-label">Column Name</label>
           <input
             type="text"

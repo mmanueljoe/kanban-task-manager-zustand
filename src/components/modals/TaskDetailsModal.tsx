@@ -89,56 +89,25 @@ export function TaskDetailsModal({
 
   return (
     <Modal open={open} onClose={onClose} aria-label="Task details">
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          marginBottom: 24,
-        }}
-      >
-        <h2 className="app-modal-title" style={{ flex: 1, margin: 0 }}>
-          {task.title}
-        </h2>
-        <div ref={menuRef} style={{ position: 'relative' }}>
+      <div className="app-modal-header-row">
+        <h2 className="app-modal-title app-modal-header-title">{task.title}</h2>
+        <div ref={menuRef} className="app-menu-anchor">
           <button
             type="button"
             aria-label="More options"
             aria-expanded={menuOpen}
             aria-haspopup="true"
             onClick={() => setMenuOpen((o) => !o)}
-            style={{
-              padding: 10,
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'var(--text-muted)',
-            }}
+            className="app-menu-trigger"
           >
             <img src={iconEllipsis} alt="" width={5} height={20} />
           </button>
           {menuOpen && (
-            <div
-              role="menu"
-              style={{
-                position: 'absolute',
-                top: '100%',
-                right: 0,
-                marginTop: 8,
-                minWidth: 192,
-                padding: 8,
-                borderRadius: 8,
-                background: 'var(--bg-main)',
-                border: '1px solid var(--lines)',
-                boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                zIndex: 20,
-              }}
-            >
+            <div role="menu" className="app-menu-panel app-menu-panel--wide">
               <button
                 type="button"
                 role="menuitem"
-                className="dropdown-option"
-                style={{ display: 'block', width: '100%', textAlign: 'left' }}
+                className="dropdown-option app-menu-item"
                 onClick={() => {
                   setMenuOpen(false);
                   // TODO: Open EditTaskModal
@@ -149,13 +118,7 @@ export function TaskDetailsModal({
               <button
                 type="button"
                 role="menuitem"
-                className="dropdown-option"
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  textAlign: 'left',
-                  color: 'var(--destructive)',
-                }}
+                className="dropdown-option app-menu-item app-menu-item--danger"
                 onClick={handleDeleteTask}
               >
                 Delete Task
@@ -166,27 +129,15 @@ export function TaskDetailsModal({
       </div>
 
       {task.description && (
-        <p
-          className="body-l"
-          style={{
-            marginBottom: 24,
-            color: 'var(--text-muted)',
-            lineHeight: 1.6,
-          }}
-        >
-          {task.description}
-        </p>
+        <p className="body-l app-modal-description">{task.description}</p>
       )}
 
       {task.subtasks && task.subtasks.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <label
-            className="input-label"
-            style={{ display: 'block', marginBottom: 16 }}
-          >
+        <div className="app-modal-section">
+          <label className="input-label app-modal-subtasks-label">
             Subtasks ({completedSubtasks} of {totalSubtasks})
           </label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="app-modal-subtasks-list">
             {task.subtasks.map((subtask) => (
               <Checkbox
                 key={subtask.title}
@@ -201,17 +152,7 @@ export function TaskDetailsModal({
 
       <div className="input-wrap">
         <label className="input-label">Current Status</label>
-        <div
-          className="input"
-          style={{
-            padding: '12px 16px',
-            backgroundColor: 'var(--bg-input)',
-            border: '1px solid var(--lines)',
-            borderRadius: 4,
-            color: 'var(--text-primary)',
-            cursor: 'default',
-          }}
-        >
+        <div className="input app-modal-status-display">
           {task.status || columnName}
         </div>
       </div>

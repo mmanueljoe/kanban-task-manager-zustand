@@ -45,14 +45,7 @@ export function DeleteBoardModal({
       <h2 className="app-modal-title app-modal-delete-title">
         Delete this board?
       </h2>
-      <p
-        className="body-l"
-        style={{
-          color: 'var(--text-muted)',
-          margin: '0 0 24px 0',
-          lineHeight: 1.6,
-        }}
-      >
+      <p className="body-l app-modal-description">
         Are you sure you want to delete the &lsquo;{boardName}&rsquo; board?
         This action will remove all columns and tasks and cannot be reversed.
       </p>

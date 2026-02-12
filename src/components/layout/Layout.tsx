@@ -43,7 +43,7 @@ function AnimatedOutlet() {
         exit="exit"
         variants={pageVariants}
         transition={pageTransition}
-        style={{ width: '100%', height: '100%' }}
+        className="app-animated-outlet"
       >
         <Outlet />
       </motion.div>
