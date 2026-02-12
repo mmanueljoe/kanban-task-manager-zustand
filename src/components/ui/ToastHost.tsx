@@ -83,7 +83,7 @@ export function ToastHost() {
         position: 'fixed',
         right: 16,
         bottom: 16,
-        zIndex: 50,
+        zIndex: 120,
         display: 'flex',
         flexDirection: 'column',
         gap: 8,

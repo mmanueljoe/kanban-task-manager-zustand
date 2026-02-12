@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 type ModalProps = {
   open: boolean;
@@ -28,7 +29,7 @@ export function Modal({
 
   if (!open) return null;
 
-  return (
+  const modalContent = (
     <div
       className="app-modal-backdrop"
       role="dialog"
@@ -41,4 +42,12 @@ export function Modal({
       </div>
     </div>
   );
+
+  // Render the modal at the document body level so it always
+  // covers the full viewport and isn't clipped by layout containers.
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+
+  return modalContent;
 }
