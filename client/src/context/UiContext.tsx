@@ -22,6 +22,7 @@ export function UiProvider({
   const removeLoadingKey = useStore((s: AppStore) => s.removeLoadingKey);
   const addToast = useStore((s: AppStore) => s.addToast);
   const removeToast = useStore((s: AppStore) => s.removeToast);
+  // const { loadingKeys, toasts, addLoadingKey, removeLoadingKey, addToast, removeToast } = useStore();
 
   const loadingStartTimesRef = useRef<Map<string, number>>(new Map());
   const stopTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(

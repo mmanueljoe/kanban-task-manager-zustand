@@ -1,0 +1,21 @@
+{
+  "name": "@kanban/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/server.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo \"TODO: wire up jest/vitest when you reach the test step\" && exit 0",
+    "lint": "echo \"TODO: add eslint config for the server package\" && exit 0"
+  },
+  "dependencies": {
+    "@kanban/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.0",
+    "typescript": "~5.9.3"
+  }
+}
