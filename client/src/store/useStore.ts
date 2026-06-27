@@ -1,12 +1,12 @@
-import { create } from 'zustand';
-import type { BoardsState, BoardsAction, User, UiToast } from '@/types/types';
-import { boardsReducer } from '@/utils/boardsReducer';
+import { create } from "zustand";
+import type { BoardsState, BoardsAction, User, UiToast } from "@/types/types";
+import { boardsReducer } from "@/utils/boardsReducer";
 import {
   getTheme,
   setTheme as persistTheme,
   getAuth,
   setAuth as persistAuth,
-} from '@/utils/localStorage';
+} from "@/utils/localStorage";
 
 const storedTheme = getTheme();
 const storedAuth = getAuth();
@@ -14,8 +14,8 @@ const storedAuth = getAuth();
 export type AppStore = BoardsState & {
   dispatch: (action: BoardsAction) => void;
 
-  theme: 'light' | 'dark';
-  setTheme: (theme: 'light' | 'dark') => void;
+  theme: "light" | "dark";
+  setTheme: (theme: "light" | "dark") => void;
 
   user: User | null;
   isLoggedIn: boolean;
@@ -36,8 +36,8 @@ export const useStore = create<AppStore>((set) => ({
     set((state) => boardsReducer(state, action));
   },
 
-  theme: storedTheme ?? 'light',
-  setTheme: (theme: 'light' | 'dark') => {
+  theme: storedTheme ?? "light",
+  setTheme: (theme: "light" | "dark") => {
     set({ theme });
     persistTheme(theme);
   },

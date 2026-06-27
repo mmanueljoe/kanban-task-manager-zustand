@@ -19,8 +19,8 @@ export type AuthContextType = {
 };
 
 export type ThemeContextType = {
-  theme: 'light' | 'dark';
-  setTheme: (theme: 'light' | 'dark') => void;
+  theme: "light" | "dark";
+  setTheme: (theme: "light" | "dark") => void;
 };
 
 export type TaskDetailsModalProps = {
@@ -67,15 +67,15 @@ export type BoardsContextType = {
 };
 
 export type BoardsAction =
-  | { type: 'ADD_BOARD'; payload: Board }
-  | { type: 'UPDATE_BOARD'; payload: { boardIndex: number; board: Board } }
-  | { type: 'DELETE_BOARD'; payload: { boardIndex: number } }
+  | { type: "ADD_BOARD"; payload: Board }
+  | { type: "UPDATE_BOARD"; payload: { boardIndex: number; board: Board } }
+  | { type: "DELETE_BOARD"; payload: { boardIndex: number } }
   | {
-      type: 'ADD_TASK';
+      type: "ADD_TASK";
       payload: { boardIndex: number; columnName: string; task: Task };
     }
   | {
-      type: 'UPDATE_TASK';
+      type: "UPDATE_TASK";
       payload: {
         boardIndex: number;
         columnName: string;
@@ -84,11 +84,11 @@ export type BoardsAction =
       };
     }
   | {
-      type: 'DELETE_TASK';
+      type: "DELETE_TASK";
       payload: { boardIndex: number; columnName: string; taskTitle: string };
     }
   | {
-      type: 'MOVE_TASK';
+      type: "MOVE_TASK";
       payload: {
         boardIndex: number;
         fromColumn: string;
@@ -97,7 +97,7 @@ export type BoardsAction =
       };
     }
   | {
-      type: 'TOOGLE_SUBTASK';
+      type: "TOOGLE_SUBTASK";
       payload: {
         boardIndex: number;
         columnName: string;
@@ -105,15 +105,15 @@ export type BoardsAction =
         subtaskTitle: string;
       };
     }
-  | { type: 'SET_BOARDS'; payload: { boards: Board[] } }
+  | { type: "SET_BOARDS"; payload: { boards: Board[] } }
   | {
-      type: 'ADD_COLUMN';
+      type: "ADD_COLUMN";
       payload: { boardIndex: number; columnName: string };
     };
 
 export type UiToast = {
   id: string;
-  type: 'success' | 'error' | 'info';
+  type: "success" | "error" | "info";
   message: string;
 };
 
@@ -124,7 +124,7 @@ export type UiState = {
 
 export type UiContextType = {
   state: UiState;
-  showToast: (params: Omit<UiToast, 'id'>) => void;
+  showToast: (params: Omit<UiToast, "id">) => void;
   startLoading: (key: string) => void;
   stopLoading: (key: string) => void;
   isLoading: (key?: string) => boolean;
@@ -132,7 +132,7 @@ export type UiContextType = {
 };
 
 export type UiActionsType = {
-  showToast: (params: Omit<UiToast, 'id'>) => void;
+  showToast: (params: Omit<UiToast, "id">) => void;
   startLoading: (key: string) => void;
   stopLoading: (key: string) => void;
   isLoading: (key?: string) => boolean;

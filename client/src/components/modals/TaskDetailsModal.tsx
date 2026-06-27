@@ -1,11 +1,11 @@
-import { useStore } from '@/store/useStore';
-import { useShallow } from 'zustand/react/shallow';
-import { useUi } from '@/hooks/useUi';
-import type { TaskDetailsModalProps } from '@/types/types';
-import { Modal } from '../ui/Modal';
-import { Checkbox } from '../ui/Checkbox';
-import { useState, useRef, useEffect, useMemo } from 'react';
-import iconEllipsis from '@assets/icon-vertical-ellipsis.svg';
+import { useStore } from "@/store/useStore";
+import { useShallow } from "zustand/react/shallow";
+import { useUi } from "@/hooks/useUi";
+import type { TaskDetailsModalProps } from "@/types/types";
+import { Modal } from "../ui/Modal";
+import { Checkbox } from "../ui/Checkbox";
+import { useState, useRef, useEffect, useMemo } from "react";
+import iconEllipsis from "@assets/icon-vertical-ellipsis.svg";
 
 export function TaskDetailsModal({
   open,
@@ -46,8 +46,8 @@ export function TaskDetailsModal({
         setMenuOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
   if (!task || boardIndex === null || !columnName || !taskTitle) return null;
@@ -58,7 +58,7 @@ export function TaskDetailsModal({
 
   const handleSubtaskToggle = (subtaskTitle: string) => {
     dispatch({
-      type: 'TOOGLE_SUBTASK',
+      type: "TOOGLE_SUBTASK",
       payload: {
         boardIndex,
         columnName,
@@ -69,19 +69,19 @@ export function TaskDetailsModal({
   };
 
   const handleDeleteTask = () => {
-    startLoading('deleteTask');
+    startLoading("deleteTask");
     try {
       dispatch({
-        type: 'DELETE_TASK',
+        type: "DELETE_TASK",
         payload: {
           boardIndex,
           columnName,
           taskTitle,
         },
       });
-      showToast({ type: 'success', message: 'Task deleted' });
+      showToast({ type: "success", message: "Task deleted" });
     } finally {
-      stopLoading('deleteTask');
+      stopLoading("deleteTask");
       setMenuOpen(false);
       onClose();
     }

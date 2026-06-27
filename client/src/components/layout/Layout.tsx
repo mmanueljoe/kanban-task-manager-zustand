@@ -1,14 +1,14 @@
-import { useState, useMemo } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Header } from '@components/layout/Header';
-import { Aside } from '@components/layout/Aside';
-import { AddTaskModal } from '@components/modals/AddTaskModal';
-import { EditBoardModal } from '@components/modals/EditBoardModal';
-import { DeleteBoardModal } from '@components/modals/DeleteBoardModal';
-import { AddBoardModal } from '@components/modals/AddBoardModal';
-import { useCurrentBoard } from '@/hooks/useCurrentBoard';
-import iconShowSidebar from '@assets/icon-show-sidebar.svg';
+import { useState, useMemo } from "react";
+import { Outlet, useNavigate, useLocation } from "react-router";
+import { AnimatePresence, motion } from "framer-motion";
+import { Header } from "@components/layout/Header";
+import { Aside } from "@components/layout/Aside";
+import { AddTaskModal } from "@components/modals/AddTaskModal";
+import { EditBoardModal } from "@components/modals/EditBoardModal";
+import { DeleteBoardModal } from "@components/modals/DeleteBoardModal";
+import { AddBoardModal } from "@components/modals/AddBoardModal";
+import { useCurrentBoard } from "@/hooks/useCurrentBoard";
+import iconShowSidebar from "@assets/icon-show-sidebar.svg";
 
 const pageVariants = {
   initial: {
@@ -26,8 +26,8 @@ const pageVariants = {
 };
 
 const pageTransition = {
-  type: 'tween' as const,
-  ease: 'easeInOut' as const,
+  type: "tween" as const,
+  ease: "easeInOut" as const,
   duration: 0.3,
 };
 
@@ -71,7 +71,7 @@ export function Layout() {
 
   return (
     <div
-      className={`app-layout ${sidebarOpen ? '' : 'app-sidebar-hidden'}`}
+      className={`app-layout ${sidebarOpen ? "" : "app-sidebar-hidden"}`}
       data-sidebar-open={sidebarOpen}
     >
       <Aside
@@ -108,7 +108,7 @@ export function Layout() {
         columnOptions={
           columnOptions.length > 0
             ? columnOptions
-            : [{ value: 'Todo', label: 'Todo' }]
+            : [{ value: "Todo", label: "Todo" }]
         }
         boardIndex={boardIndex}
       />
@@ -126,7 +126,7 @@ export function Layout() {
             open={deleteBoardOpen}
             onClose={() => setDeleteBoardOpen(false)}
             onConfirm={() => {
-              void navigate('/', { replace: true });
+              void navigate("/", { replace: true });
             }}
             boardName={currentBoard.name}
             boardIndex={boardIndex}

@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Modal } from '@components/ui/Modal';
-import { Button } from '@components/ui/Button';
-import iconCross from '@assets/icon-cross.svg';
-import { useBoards } from '@/hooks/useBoards';
-import { useUi } from '@/hooks/useUi';
-import type { Board } from '@/types/types';
+import { useState } from "react";
+import { useNavigate } from "react-router";
+import { Modal } from "@components/ui/Modal";
+import { Button } from "@components/ui/Button";
+import iconCross from "@assets/icon-cross.svg";
+import { useBoards } from "@/hooks/useBoards";
+import { useUi } from "@/hooks/useUi";
+import type { Board } from "@/types/types";
 
 type AddBoardModalProps = {
   open: boolean;
@@ -17,10 +17,10 @@ export function AddBoardModal({ open, onClose }: AddBoardModalProps) {
   const { startLoading, stopLoading, showToast } = useUi();
   const navigate = useNavigate();
 
-  const [name, setName] = useState('');
-  const [columns, setColumns] = useState<string[]>(['Todo', 'Doing']);
+  const [name, setName] = useState("");
+  const [columns, setColumns] = useState<string[]>(["Todo", "Doing"]);
 
-  const addColumn = () => setColumns((c) => [...c, '']);
+  const addColumn = () => setColumns((c) => [...c, ""]);
   const removeColumn = (i: number) =>
     setColumns((c) => c.filter((_, idx) => idx !== i));
   const updateColumn = (i: number, v: string) =>
@@ -36,8 +36,8 @@ export function AddBoardModal({ open, onClose }: AddBoardModalProps) {
     const trimmedName = name.trim();
     if (!trimmedName) {
       showToast({
-        type: 'error',
-        message: 'Please provide a name for the board.',
+        type: "error",
+        message: "Please provide a name for the board.",
       });
       return;
     }
@@ -48,8 +48,8 @@ export function AddBoardModal({ open, onClose }: AddBoardModalProps) {
 
     if (cleanedColumns.length === 0) {
       showToast({
-        type: 'error',
-        message: 'Please add at least one column for the new board.',
+        type: "error",
+        message: "Please add at least one column for the new board.",
       });
       return;
     }
@@ -64,19 +64,19 @@ export function AddBoardModal({ open, onClose }: AddBoardModalProps) {
       })),
     };
 
-    startLoading('addBoard');
+    startLoading("addBoard");
     try {
       dispatch({
-        type: 'ADD_BOARD',
+        type: "ADD_BOARD",
         payload: newBoard,
       });
-      showToast({ type: 'success', message: 'Board created' });
+      showToast({ type: "success", message: "Board created" });
       void navigate(`/board/${newBoardIndex}`);
     } finally {
-      stopLoading('addBoard');
+      stopLoading("addBoard");
       onClose();
-      setName('');
-      setColumns(['Todo', 'Doing']);
+      setName("");
+      setColumns(["Todo", "Doing"]);
     }
   };
 

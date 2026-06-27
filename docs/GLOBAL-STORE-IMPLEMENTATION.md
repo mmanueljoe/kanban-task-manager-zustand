@@ -181,9 +181,9 @@ Zustand’s `create` accepts a function that receives `set` (and optionally `get
 Example pattern (you will adapt this to your actual `create` + persist setup):
 
 ```ts
-import { create } from 'zustand';
-import type { BoardsState, BoardsAction } from '@/types/types';
-import { boardsReducer } from '@/utils/boardsReducer';
+import { create } from "zustand";
+import type { BoardsState, BoardsAction } from "@/types/types";
+import { boardsReducer } from "@/utils/boardsReducer";
 
 const initialState: BoardsState = { boards: [] };
 

@@ -1,7 +1,7 @@
-import { useParams } from 'react-router';
-import { useStore } from '@/store/useStore';
-import { useShallow } from 'zustand/react/shallow';
-import type { Board } from '@/types/types';
+import { useParams } from "react-router";
+import { useStore } from "@/store/useStore";
+import { useShallow } from "zustand/react/shallow";
+import type { Board } from "@/types/types";
 
 type UseCurrentBoardResult = {
   board: Board | null;

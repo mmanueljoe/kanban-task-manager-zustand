@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Modal } from '@components/ui/Modal';
-import { Button } from '@components/ui/Button';
-import { useStore } from '@/store/useStore';
-import { useUi } from '@/hooks/useUi';
+import { useState } from "react";
+import { Modal } from "@components/ui/Modal";
+import { Button } from "@components/ui/Button";
+import { useStore } from "@/store/useStore";
+import { useUi } from "@/hooks/useUi";
 
 type AddColumnModalProps = {
   open: boolean;
@@ -17,31 +17,31 @@ export function AddColumnModal({
 }: AddColumnModalProps) {
   const dispatch = useStore((state) => state.dispatch);
   const { startLoading, stopLoading, showToast } = useUi();
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (boardIndex === null || !name.trim()) {
       showToast({
-        type: 'error',
-        message: 'Please provide a name for the new column.',
+        type: "error",
+        message: "Please provide a name for the new column.",
       });
       return;
     }
 
-    startLoading('addColumn');
+    startLoading("addColumn");
     try {
       dispatch({
-        type: 'ADD_COLUMN',
+        type: "ADD_COLUMN",
         payload: {
           boardIndex,
           columnName: name.trim(),
         },
       });
-      showToast({ type: 'success', message: 'Column added' });
-      setName('');
+      showToast({ type: "success", message: "Column added" });
+      setName("");
     } finally {
-      stopLoading('addColumn');
+      stopLoading("addColumn");
       onClose();
     }
   };

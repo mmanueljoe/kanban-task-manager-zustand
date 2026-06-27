@@ -1,7 +1,7 @@
-import { memo } from 'react';
-import { useTheme } from '@hooks/useTheme';
-import iconLight from '@assets/icon-light-theme.svg';
-import iconDark from '@assets/icon-dark-theme.svg';
+import { memo } from "react";
+import { useTheme } from "@hooks/useTheme";
+import iconLight from "@assets/icon-light-theme.svg";
+import iconDark from "@assets/icon-dark-theme.svg";
 
 type ThemeToggleProps = {
   className?: string;
@@ -12,7 +12,7 @@ export const ThemeToggle = memo(function ThemeToggle({
 }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
 
-  const nextTheme = theme === 'light' ? 'dark' : 'light';
+  const nextTheme = theme === "light" ? "dark" : "light";
 
   return (
     <div className={className}>

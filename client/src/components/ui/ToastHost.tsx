@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import type { UiToast } from '@/types/types';
-import { useStore } from '@/store/useStore';
+import { useEffect } from "react";
+import type { UiToast } from "@/types/types";
+import { useStore } from "@/store/useStore";
 
 const AUTO_DISMISS_MS = 4000;
 
@@ -18,14 +18,14 @@ function Toast({ toast, onDismiss }: ToastProps) {
   }, [onDismiss, toast.id]);
 
   const background =
-    toast.type === 'success'
-      ? 'var(--toast-success-bg, var(--bg-main))'
-      : toast.type === 'error'
-        ? 'var(--toast-error-bg, var(--bg-main))'
-        : 'var(--toast-info-bg, var(--bg-main))';
+    toast.type === "success"
+      ? "var(--toast-success-bg, var(--bg-main))"
+      : toast.type === "error"
+        ? "var(--toast-error-bg, var(--bg-main))"
+        : "var(--toast-info-bg, var(--bg-main))";
 
   const color =
-    toast.type === 'error' ? 'var(--destructive)' : 'var(--text-primary)';
+    toast.type === "error" ? "var(--destructive)" : "var(--text-primary)";
 
   return (
     <div className="app-toast" style={{ background, color }}>

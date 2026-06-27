@@ -1,14 +1,14 @@
-import { Link, useNavigate } from 'react-router';
-import { useRef, useState, useEffect, memo, useMemo } from 'react';
-import { useBoards } from '@/hooks/useBoards';
-import { useCurrentBoard } from '@/hooks/useCurrentBoard';
-import { useAuth } from '@/hooks/useAuth';
-import { ThemeToggle } from '@components/ui/ThemeToggle';
-import logoMobile from '@assets/logo-mobile.svg';
-import iconChevronDown from '@assets/icon-chevron-down.svg';
-import iconAddTask from '@assets/icon-add-task-mobile.svg';
-import iconEllipsis from '@assets/icon-vertical-ellipsis.svg';
-import iconBoard from '@assets/icon-board.svg';
+import { Link, useNavigate } from "react-router";
+import { useRef, useState, useEffect, memo, useMemo } from "react";
+import { useBoards } from "@/hooks/useBoards";
+import { useCurrentBoard } from "@/hooks/useCurrentBoard";
+import { useAuth } from "@/hooks/useAuth";
+import { ThemeToggle } from "@components/ui/ThemeToggle";
+import logoMobile from "@assets/logo-mobile.svg";
+import iconChevronDown from "@assets/icon-chevron-down.svg";
+import iconAddTask from "@assets/icon-add-task-mobile.svg";
+import iconEllipsis from "@assets/icon-vertical-ellipsis.svg";
+import iconBoard from "@assets/icon-board.svg";
 
 type HeaderProps = {
   onAddTask?: () => void;
@@ -33,7 +33,7 @@ const BoardDropdownItem = memo(function BoardDropdownItem({
     <li>
       <Link
         to={`/board/${index}`}
-        className={`app-board-dropdown-item ${isActive ? 'active' : ''}`}
+        className={`app-board-dropdown-item ${isActive ? "active" : ""}`}
         onClick={onSelect}
       >
         <img
@@ -41,7 +41,7 @@ const BoardDropdownItem = memo(function BoardDropdownItem({
           alt=""
           width={16}
           height={16}
-          className={`app-board-dropdown-icon ${isActive ? '' : 'app-board-dropdown-icon--inactive'}`}
+          className={`app-board-dropdown-icon ${isActive ? "" : "app-board-dropdown-icon--inactive"}`}
         />
         {boardName}
       </Link>
@@ -78,24 +78,24 @@ export function Header({
       setMenuOpen(false);
       setAccountMenuOpen(false);
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen, accountMenuOpen]);
 
   const currentBoardName = useMemo(
-    () => (board != null && boardIndex != null ? board.name : 'Boards'),
+    () => (board != null && boardIndex != null ? board.name : "Boards"),
     [board?.name, boardIndex]
   );
 
   const handleLogout = () => {
     logout();
-    void navigate('/login', { replace: true });
+    void navigate("/login", { replace: true });
   };
 
   const userInitial =
     user?.name?.trim()?.charAt(0).toUpperCase() ??
     user?.email?.trim()?.charAt(0).toUpperCase() ??
-    'A';
+    "A";
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -107,8 +107,8 @@ export function Header({
         setDropdownOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownOpen]);
 
   return (
@@ -134,7 +134,7 @@ export function Header({
             alt=""
             width={10}
             height={7}
-            className={`app-header-board-chevron ${dropdownOpen ? 'app-header-board-chevron--open' : ''}`}
+            className={`app-header-board-chevron ${dropdownOpen ? "app-header-board-chevron--open" : ""}`}
           />
         </button>
         <span className="app-header-board-name" title={currentBoardName}>
@@ -179,9 +179,9 @@ export function Header({
                       width={16}
                       height={16}
                       style={{
-                        display: 'inline-block',
+                        display: "inline-block",
                         marginRight: 12,
-                        verticalAlign: 'middle',
+                        verticalAlign: "middle",
                         opacity: 0.5,
                       }}
                     />
@@ -230,7 +230,7 @@ export function Header({
                 className="dropdown-option app-menu-item"
                 onClick={() => {
                   setAccountMenuOpen(false);
-                  void navigate('/admin');
+                  void navigate("/admin");
                 }}
               >
                 Admin

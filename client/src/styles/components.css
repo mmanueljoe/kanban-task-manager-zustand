@@ -5,7 +5,7 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     border-radius: 9999px;
     border-width: 2px;
@@ -52,7 +52,7 @@
   }
 
   .btn-large {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 500;
     font-size: 13px;
     line-height: 23px;
@@ -60,7 +60,7 @@
   }
 
   .btn-small {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 12px;
     line-height: 19px;
@@ -74,14 +74,14 @@
     gap: 4px;
   }
   .input-label {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 12px;
     line-height: 19px;
     color: var(--text-primary);
   }
   .input {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 500;
     font-size: 13px;
     line-height: 23px;
@@ -104,7 +104,7 @@
     border-color: var(--destructive);
   }
   .input-error-text {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 12px;
     line-height: 19px;
@@ -125,7 +125,7 @@
   .checkbox:hover {
     background-color: var(--secondary-bg);
   }
-  [data-theme='dark'] .checkbox:hover {
+  [data-theme="dark"] .checkbox:hover {
     background-color: var(--lines);
   }
   .checkbox-box {
@@ -154,7 +154,7 @@
     opacity: 0;
   }
   .checkbox-label {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 12px;
     line-height: 19px;
@@ -170,7 +170,7 @@
     position: relative;
   }
   .dropdown-trigger {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 500;
     font-size: 13px;
     line-height: 23px;
@@ -222,7 +222,7 @@
     padding: 0;
   }
   .dropdown-option {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 500;
     font-size: 13px;
     line-height: 23px;
@@ -241,7 +241,7 @@
     background-color: var(--secondary-bg);
     color: var(--text-primary);
   }
-  [data-theme='dark'] .dropdown-option:hover {
+  [data-theme="dark"] .dropdown-option:hover {
     background-color: var(--lines);
   }
   .dropdown-option.selected {
@@ -270,7 +270,7 @@
     box-shadow: 0 10px 25px rgb(0 0 0 / 0.2);
   }
   .app-board-dropdown-title {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 12px;
     line-height: 15px;
@@ -289,7 +289,7 @@
     width: 100%;
     padding: 14px 12px;
     border-radius: 0 100px 100px 0;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 15px;
     line-height: 19px;
@@ -324,7 +324,7 @@
     border-top: 1px solid var(--lines);
   }
   .app-board-dropdown-theme-label {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 15px;
     line-height: 19px;
@@ -342,7 +342,7 @@
     flex-shrink: 0;
   }
   .app-board-dropdown-toggle::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 2px;
     left: 2px;
@@ -352,7 +352,7 @@
     background-color: white;
     transition: transform 0.2s;
   }
-  [data-theme='dark'] .app-board-dropdown-toggle::after {
+  [data-theme="dark"] .app-board-dropdown-toggle::after {
     transform: translateX(20px);
   }
 

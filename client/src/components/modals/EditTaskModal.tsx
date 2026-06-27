@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { Modal } from '@components/ui/Modal';
-import { Button } from '@components/ui/Button';
-import { Dropdown } from '@components/ui/Dropdown';
-import iconCross from '@assets/icon-cross.svg';
-import { useUi } from '@/hooks/useUi';
+import { useState } from "react";
+import { Modal } from "@components/ui/Modal";
+import { Button } from "@components/ui/Button";
+import { Dropdown } from "@components/ui/Dropdown";
+import iconCross from "@assets/icon-cross.svg";
+import { useUi } from "@/hooks/useUi";
 
 type EditTaskModalProps = {
   open: boolean;
@@ -19,22 +19,22 @@ export function EditTaskModal({
   open,
   onClose,
   columnOptions,
-  initialTitle = '',
-  initialDescription = '',
-  initialSubtasks = ['', ''],
-  initialStatus = '',
+  initialTitle = "",
+  initialDescription = "",
+  initialSubtasks = ["", ""],
+  initialStatus = "",
 }: EditTaskModalProps) {
   const { showToast } = useUi();
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription);
   const [subtasks, setSubtasks] = useState(
-    initialSubtasks.length > 0 ? initialSubtasks : ['']
+    initialSubtasks.length > 0 ? initialSubtasks : [""]
   );
   const [status, setStatus] = useState(
-    (initialStatus || columnOptions[0]?.value) ?? ''
+    (initialStatus || columnOptions[0]?.value) ?? ""
   );
 
-  const addSubtask = () => setSubtasks((s) => [...s, '']);
+  const addSubtask = () => setSubtasks((s) => [...s, ""]);
   const removeSubtask = (i: number) =>
     setSubtasks((s) => s.filter((_, idx) => idx !== i));
   const updateSubtask = (i: number, v: string) =>
@@ -46,7 +46,7 @@ export function EditTaskModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    showToast({ type: 'success', message: 'Task changes saved' });
+    showToast({ type: "success", message: "Task changes saved" });
     onClose();
   };
 

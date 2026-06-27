@@ -1,18 +1,18 @@
-import { memo } from 'react';
-import type { ButtonHTMLAttributes } from 'react';
+import { memo } from "react";
+import type { ButtonHTMLAttributes } from "react";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'destructive';
-  size?: 'large' | 'small';
+  variant?: "primary" | "secondary" | "destructive";
+  size?: "large" | "small";
 };
 
 export const Button = memo(function Button({
   children,
-  variant = 'primary',
-  size = 'large',
-  className = '',
-  type = 'button',
+  variant = "primary",
+  size = "large",
+  className = "",
+  type = "button",
   ...rest
 }: ButtonProps) {
   return (

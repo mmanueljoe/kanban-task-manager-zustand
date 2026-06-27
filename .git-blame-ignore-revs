@@ -1,0 +1,11 @@
+# Commits listed here are skipped by `git blame` so bulk reformatting doesn't
+# show up as the last edit on every line.
+#
+# After you commit the double-quote reformat, append that commit's FULL hash
+# on its own line below (a 40-char SHA). Then it's quarantined from blame.
+#
+# This file is honored automatically by GitHub. To enable it in your local
+# git too, run once:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# style: switch to double quotes  -> add the commit hash on the next line:

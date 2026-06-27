@@ -1,7 +1,7 @@
-import { Modal } from '@components/ui/Modal';
-import { Button } from '@components/ui/Button';
-import { useStore } from '@/store/useStore';
-import { useUi } from '@/hooks/useUi';
+import { Modal } from "@components/ui/Modal";
+import { Button } from "@components/ui/Button";
+import { useStore } from "@/store/useStore";
+import { useUi } from "@/hooks/useUi";
 
 type DeleteBoardModalProps = {
   open: boolean;
@@ -23,19 +23,19 @@ export function DeleteBoardModal({
   const handleConfirm = () => {
     if (boardIndex == null) {
       showToast({
-        type: 'error',
-        message: 'Could not delete board. Please try again.',
+        type: "error",
+        message: "Could not delete board. Please try again.",
       });
       onClose();
       return;
     }
-    startLoading('deleteBoard');
+    startLoading("deleteBoard");
     try {
-      dispatch({ type: 'DELETE_BOARD', payload: { boardIndex } });
+      dispatch({ type: "DELETE_BOARD", payload: { boardIndex } });
       onConfirm();
-      showToast({ type: 'success', message: 'Board deleted' });
+      showToast({ type: "success", message: "Board deleted" });
     } finally {
-      stopLoading('deleteBoard');
+      stopLoading("deleteBoard");
       onClose();
     }
   };

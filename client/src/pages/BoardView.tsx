@@ -1,11 +1,11 @@
-import { Link } from 'react-router';
-import { useBoards } from '@/hooks/useBoards';
-import { useCurrentBoard } from '@/hooks/useCurrentBoard';
-import { Button } from '@components/ui/Button';
-import type { Task } from '@/types/types';
-import { useCallback, useState, useMemo, memo } from 'react';
-import { TaskDetailsModal } from '@components/modals/TaskDetailsModal';
-import { AddColumnModal } from '@components/modals/AddColumnModal';
+import { Link } from "react-router";
+import { useBoards } from "@/hooks/useBoards";
+import { useCurrentBoard } from "@/hooks/useCurrentBoard";
+import { Button } from "@components/ui/Button";
+import type { Task } from "@/types/types";
+import { useCallback, useState, useMemo, memo } from "react";
+import { TaskDetailsModal } from "@components/modals/TaskDetailsModal";
+import { AddColumnModal } from "@components/modals/AddColumnModal";
 import {
   DndContext,
   type DragEndEvent,
@@ -14,14 +14,14 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-} from '@dnd-kit/core';
+} from "@dnd-kit/core";
 
 const COLUMN_DOT_COLORS = [
-  '#49C4E5',
-  '#635FC7',
-  '#67E2AE',
-  '#E5A449',
-  '#2A3FDB',
+  "#49C4E5",
+  "#635FC7",
+  "#67E2AE",
+  "#E5A449",
+  "#2A3FDB",
 ];
 
 function encodeTaskId(
@@ -34,12 +34,12 @@ function encodeTaskId(
 function decodeTaskId(
   id: string
 ): { boardIndex: number; columnName: string; taskTitle: string } | null {
-  const parts = id.split('::');
+  const parts = id.split("::");
   if (parts.length < 3) return null;
   return {
     boardIndex: parseInt(parts[0], 10),
     columnName: parts[1],
-    taskTitle: parts.slice(2).join('::'),
+    taskTitle: parts.slice(2).join("::"),
   };
 }
 function encodeColumnId(boardIndex: number, columnName: string) {
@@ -48,7 +48,7 @@ function encodeColumnId(boardIndex: number, columnName: string) {
 function decodeColumnId(
   id: string
 ): { boardIndex: number; columnName: string } | null {
-  const parts = id.split('::');
+  const parts = id.split("::");
   if (parts.length < 2) return null;
   return { boardIndex: parseInt(parts[0], 10), columnName: parts[1] };
 }
@@ -105,7 +105,7 @@ const DroppableColumn = memo(function DroppableColumn({
       ref={setNodeRef}
       className="app-board-column"
       style={{
-        outline: isOver ? '2px dashed var(--accent, #635FC7)' : undefined,
+        outline: isOver ? "2px dashed var(--accent, #635FC7)" : undefined,
         outlineOffset: 4,
       }}
     >
@@ -140,7 +140,7 @@ export function BoardView() {
   const subtaskSummary = useCallback((task: Task): string => {
     const total = task.subtasks?.length ?? 0;
     const done = task.subtasks?.filter((s) => s.isCompleted).length ?? 0;
-    return `${done} of ${total} substask${total !== 1 ? 's' : ''}`;
+    return `${done} of ${total} substask${total !== 1 ? "s" : ""}`;
   }, []);
 
   const sensors = useSensors(
@@ -164,7 +164,7 @@ export function BoardView() {
       const toColumn = columnData.columnName;
       if (fromColumn === toColumn) return;
       dispatch({
-        type: 'MOVE_TASK',
+        type: "MOVE_TASK",
         payload: { boardIndex, fromColumn, toColumn, taskTitle },
       });
     },

@@ -4,10 +4,10 @@ import {
   useRef,
   type ReactElement,
   type ReactNode,
-} from 'react';
-import type { UiContextType, UiToast } from '@/types/types';
-import { useStore, type AppStore } from '@store/useStore';
-import { uiContext } from '@context/ui-context';
+} from "react";
+import type { UiContextType, UiToast } from "@/types/types";
+import { useStore, type AppStore } from "@store/useStore";
+import { uiContext } from "@context/ui-context";
 
 const MIN_LOADING_DURATION_MS = 300;
 
@@ -67,7 +67,7 @@ export function UiProvider({
   );
 
   const showToast = useCallback(
-    ({ type, message }: Omit<UiToast, 'id'>) => {
+    ({ type, message }: Omit<UiToast, "id">) => {
       const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       addToast({ id, type, message });
     },

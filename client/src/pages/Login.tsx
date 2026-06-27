@@ -1,6 +1,6 @@
-import { useNavigate } from 'react-router';
-import { Button } from '@components/ui/Button';
-import { useAuth } from '@hooks/useAuth';
+import { useNavigate } from "react-router";
+import { Button } from "@components/ui/Button";
+import { useAuth } from "@hooks/useAuth";
 
 export function Login() {
   const navigate = useNavigate();
@@ -9,11 +9,11 @@ export function Login() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     login({
-      id: '1',
-      name: 'Demo User',
-      email: 'demo@example.com',
+      id: "1",
+      name: "Demo User",
+      email: "demo@example.com",
     });
-    void navigate('/', { replace: true });
+    void navigate("/", { replace: true });
   };
 
   return (

@@ -1,11 +1,11 @@
-import { Link, useLocation } from 'react-router';
-import { useBoards } from '@/hooks/useBoards';
-import { ThemeToggle } from '@components/ui/ThemeToggle';
-import { memo } from 'react';
+import { Link, useLocation } from "react-router";
+import { useBoards } from "@/hooks/useBoards";
+import { ThemeToggle } from "@components/ui/ThemeToggle";
+import { memo } from "react";
 
-import iconBoard from '@assets/icon-board.svg';
-import iconHideSidebar from '@assets/icon-hide-sidebar.svg';
-import logoMobile from '@assets/logo-mobile.svg';
+import iconBoard from "@assets/icon-board.svg";
+import iconHideSidebar from "@assets/icon-hide-sidebar.svg";
+import logoMobile from "@assets/logo-mobile.svg";
 
 type AsideProps = {
   onHideSidebar: () => void;
@@ -24,7 +24,7 @@ const BoardLink = memo(function BoardLink({
   return (
     <Link
       to={`/board/${index}`}
-      className={`app-aside-link ${isActive ? 'active' : ''}`}
+      className={`app-aside-link ${isActive ? "active" : ""}`}
     >
       <img src={iconBoard} alt="" width={16} height={16} aria-hidden />
       {boardName}

@@ -1,17 +1,17 @@
 /* Design tokens and CSS variables - must be imported first */
-@import './styles/tokens.css';
+@import "./styles/tokens.css";
 
 /* Typography system */
-@import './styles/typography.css';
+@import "./styles/typography.css";
 
 /* Layout components (header, sidebar, main content) */
-@import './styles/layout.css';
+@import "./styles/layout.css";
 
 /* Board view (columns, tasks, cards) */
-@import './styles/board.css';
+@import "./styles/board.css";
 
 /* UI components (buttons, inputs, checkboxes, dropdowns) */
-@import './styles/components.css';
+@import "./styles/components.css";
 
 /* Modals and overlays */
-@import './styles/modals.css';
+@import "./styles/modals.css";

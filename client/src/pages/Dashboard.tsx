@@ -1,7 +1,7 @@
-import { Link } from 'react-router';
-import { memo } from 'react';
-import { Button } from '@components/ui/Button';
-import { useBoards } from '@/hooks/useBoards';
+import { Link } from "react-router";
+import { memo } from "react";
+import { Button } from "@components/ui/Button";
+import { useBoards } from "@/hooks/useBoards";
 
 export const BoardCard = memo(function BoardCard({
   boardName,

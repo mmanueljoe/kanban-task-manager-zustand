@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { Modal } from '@components/ui/Modal';
-import { Button } from '@components/ui/Button';
-import iconCross from '@assets/icon-cross.svg';
-import { useStore } from '@/store/useStore';
-import { useUi } from '@/hooks/useUi';
-import type { Board } from '@/types/types';
+import { useState } from "react";
+import { Modal } from "@components/ui/Modal";
+import { Button } from "@components/ui/Button";
+import iconCross from "@assets/icon-cross.svg";
+import { useStore } from "@/store/useStore";
+import { useUi } from "@/hooks/useUi";
+import type { Board } from "@/types/types";
 
 type EditBoardModalProps = {
   open: boolean;
@@ -28,7 +28,7 @@ export function EditBoardModal({
   const [name, setName] = useState(initialName);
   const [columns, setColumns] = useState(initialColumns);
 
-  const addColumn = () => setColumns((c) => [...c, '']);
+  const addColumn = () => setColumns((c) => [...c, ""]);
   const removeColumn = (i: number) =>
     setColumns((c) => c.filter((_, idx) => idx !== i));
   const updateColumn = (i: number, v: string) =>
@@ -43,8 +43,8 @@ export function EditBoardModal({
 
     if (boardIndex == null) {
       showToast({
-        type: 'error',
-        message: 'Could not update board. Please try again.',
+        type: "error",
+        message: "Could not update board. Please try again.",
       });
       onClose();
       return;
@@ -65,15 +65,15 @@ export function EditBoardModal({
       name: name.trim() || originalBoard.name,
       columns: updatedColumns,
     };
-    startLoading('editBoard');
+    startLoading("editBoard");
     try {
       dispatch({
-        type: 'UPDATE_BOARD',
+        type: "UPDATE_BOARD",
         payload: { boardIndex, board: updatedBoard },
       });
-      showToast({ type: 'success', message: 'Board updated' });
+      showToast({ type: "success", message: "Board updated" });
     } finally {
-      stopLoading('editBoard');
+      stopLoading("editBoard");
       onClose();
     }
   };

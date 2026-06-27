@@ -1,13 +1,13 @@
-import { useContext } from 'react';
-import { uiContext } from '@context/ui-context';
-import { useStore } from '@/store/useStore';
-import type { AppStore } from '@/store/useStore';
-import type { UiContextType, UiActionsType, UiToast } from '@/types/types';
+import { useContext } from "react";
+import { uiContext } from "@context/ui-context";
+import { useStore } from "@/store/useStore";
+import type { AppStore } from "@/store/useStore";
+import type { UiContextType, UiActionsType, UiToast } from "@/types/types";
 
 export function useUi(): UiContextType {
   const ctx = useContext(uiContext);
   if (!ctx) {
-    throw new Error('useUi must be used inside UiProvider');
+    throw new Error("useUi must be used inside UiProvider");
   }
   return ctx;
 }
@@ -29,7 +29,7 @@ export function useUiActions(): UiActionsType {
   const ctx = useContext(uiContext);
 
   if (ctx === null) {
-    throw new Error('useUiActions must be used inside UiProvider');
+    throw new Error("useUiActions must be used inside UiProvider");
   }
 
   const result: UiActionsType = {

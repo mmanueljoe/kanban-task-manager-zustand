@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, memo } from 'react';
-import iconChevronDown from '@assets/icon-chevron-down.svg';
+import { useState, useRef, useEffect, memo } from "react";
+import iconChevronDown from "@assets/icon-chevron-down.svg";
 
 type DropdownOption = { value: string; label: string };
 
@@ -16,8 +16,8 @@ export const Dropdown = memo(function Dropdown({
   options,
   value,
   onChange,
-  placeholder = 'Select',
-  className = '',
+  placeholder = "Select",
+  className = "",
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -31,8 +31,8 @@ export const Dropdown = memo(function Dropdown({
         setIsOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -40,7 +40,7 @@ export const Dropdown = memo(function Dropdown({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`dropdown-trigger ${isOpen ? 'open' : ''}`}
+        className={`dropdown-trigger ${isOpen ? "open" : ""}`}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
@@ -48,7 +48,7 @@ export const Dropdown = memo(function Dropdown({
         <img
           src={iconChevronDown}
           alt=""
-          className={`dropdown-chevron ${isOpen ? 'open' : ''}`}
+          className={`dropdown-chevron ${isOpen ? "open" : ""}`}
           aria-hidden
         />
       </button>
@@ -67,7 +67,7 @@ export const Dropdown = memo(function Dropdown({
                   onChange(option.value);
                   setIsOpen(false);
                 }}
-                className={`dropdown-option ${value === option.value ? 'selected' : ''}`}
+                className={`dropdown-option ${value === option.value ? "selected" : ""}`}
               >
                 {option.label}
               </button>

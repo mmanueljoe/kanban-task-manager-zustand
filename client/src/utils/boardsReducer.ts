@@ -1,30 +1,30 @@
-import type { BoardsAction, BoardsState } from '@/types/types';
+import type { BoardsAction, BoardsState } from "@/types/types";
 
 export function boardsReducer(
   state: BoardsState,
   action: BoardsAction
 ): BoardsState {
   switch (action.type) {
-    case 'ADD_BOARD':
+    case "ADD_BOARD":
       return {
         ...state,
         boards: [...state.boards, action.payload],
       };
-    case 'UPDATE_BOARD':
+    case "UPDATE_BOARD":
       return {
         ...state,
         boards: state.boards.map((board, index) =>
           index === action.payload.boardIndex ? action.payload.board : board
         ),
       };
-    case 'DELETE_BOARD':
+    case "DELETE_BOARD":
       return {
         ...state,
         boards: state.boards.filter(
           (_, index) => index !== action.payload.boardIndex
         ),
       };
-    case 'ADD_TASK':
+    case "ADD_TASK":
       return {
         ...state,
         boards: state.boards.map((board, index) =>
@@ -43,7 +43,7 @@ export function boardsReducer(
             : board
         ),
       };
-    case 'UPDATE_TASK':
+    case "UPDATE_TASK":
       return {
         ...state,
         boards: state.boards.map((board, index) =>
@@ -66,7 +66,7 @@ export function boardsReducer(
             : board
         ),
       };
-    case 'DELETE_TASK':
+    case "DELETE_TASK":
       return {
         ...state,
         boards: state.boards.map((board, index) =>
@@ -87,7 +87,7 @@ export function boardsReducer(
             : board
         ),
       };
-    case 'MOVE_TASK': {
+    case "MOVE_TASK": {
       const { boardIndex, fromColumn, toColumn, taskTitle } = action.payload;
 
       const board = state.boards[boardIndex];
@@ -128,7 +128,7 @@ export function boardsReducer(
         ),
       };
     }
-    case 'TOOGLE_SUBTASK':
+    case "TOOGLE_SUBTASK":
       return {
         ...state,
         boards: state.boards.map((board, index) =>
@@ -161,7 +161,7 @@ export function boardsReducer(
             : board
         ),
       };
-    case 'ADD_COLUMN': {
+    case "ADD_COLUMN": {
       const { boardIndex, columnName } = action.payload;
 
       if (!columnName.trim()) return state;
@@ -178,7 +178,7 @@ export function boardsReducer(
         ),
       };
     }
-    case 'SET_BOARDS':
+    case "SET_BOARDS":
       return {
         ...state,
         boards: action.payload.boards,

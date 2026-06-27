@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { Modal } from '@components/ui/Modal';
-import { Button } from '@components/ui/Button';
-import { Dropdown } from '@components/ui/Dropdown';
-import iconCross from '@assets/icon-cross.svg';
-import { useStore } from '@/store/useStore';
-import { useUi } from '@/hooks/useUi';
-import type { Task } from '@/types/types';
+import { useState } from "react";
+import { Modal } from "@components/ui/Modal";
+import { Button } from "@components/ui/Button";
+import { Dropdown } from "@components/ui/Dropdown";
+import iconCross from "@assets/icon-cross.svg";
+import { useStore } from "@/store/useStore";
+import { useUi } from "@/hooks/useUi";
+import type { Task } from "@/types/types";
 
 type AddTaskModalProps = {
   open: boolean;
@@ -22,12 +22,12 @@ export function AddTaskModal({
 }: AddTaskModalProps) {
   const dispatch = useStore((state) => state.dispatch);
   const { startLoading, stopLoading, showToast } = useUi();
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [subtasks, setSubtasks] = useState(['', '']);
-  const [status, setStatus] = useState(columnOptions[0]?.value ?? '');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [subtasks, setSubtasks] = useState(["", ""]);
+  const [status, setStatus] = useState(columnOptions[0]?.value ?? "");
 
-  const addSubtask = () => setSubtasks((s) => [...s, '']);
+  const addSubtask = () => setSubtasks((s) => [...s, ""]);
   const removeSubtask = (i: number) =>
     setSubtasks((s) => s.filter((_, idx) => idx !== i));
   const updateSubtask = (i: number, v: string) =>
@@ -41,8 +41,8 @@ export function AddTaskModal({
     e.preventDefault();
     if (boardIndex == null || !status || !title.trim()) {
       showToast({
-        type: 'error',
-        message: 'Please provide a title and status for the task.',
+        type: "error",
+        message: "Please provide a title and status for the task.",
       });
       return;
     }
@@ -57,15 +57,15 @@ export function AddTaskModal({
         .map((s) => ({ title: s, isCompleted: false })),
     };
 
-    startLoading('addTask');
+    startLoading("addTask");
     try {
       dispatch({
-        type: 'ADD_TASK',
+        type: "ADD_TASK",
         payload: { boardIndex, columnName: status, task: newTask },
       });
-      showToast({ type: 'success', message: 'Task created' });
+      showToast({ type: "success", message: "Task created" });
     } finally {
-      stopLoading('addTask');
+      stopLoading("addTask");
       onClose();
     }
   };
@@ -104,7 +104,7 @@ export function AddTaskModal({
                 type="text"
                 className="input app-modal-sublist-input"
                 placeholder={
-                  i === 0 ? 'e.g. Make coffee.' : 'e.g. Drink coffee & smile.'
+                  i === 0 ? "e.g. Make coffee." : "e.g. Drink coffee & smile."
                 }
                 value={val}
                 onChange={(e) => updateSubtask(i, e.target.value)}

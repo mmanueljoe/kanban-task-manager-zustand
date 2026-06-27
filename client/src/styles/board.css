@@ -53,7 +53,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 18px;
     line-height: 23px;
@@ -86,7 +86,7 @@
     flex-shrink: 0;
   }
   .app-board-column-title {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 12px;
     line-height: 15px;
@@ -115,7 +115,7 @@
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   }
   .app-board-task-title {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 15px;
     line-height: 19px;
@@ -123,7 +123,7 @@
     margin: 0 0 4px 0;
   }
   .app-board-task-subtasks {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 500;
     font-size: 12px;
     line-height: 15px;

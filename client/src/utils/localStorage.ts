@@ -1,10 +1,10 @@
-import type { Auth, BoardsData } from '@/types/types';
+import type { Auth, BoardsData } from "@/types/types";
 
-const AUTH = 'user_auth';
-const THEME = 'app_theme';
-const BOARDS = 'kanban_boards';
+const AUTH = "user_auth";
+const THEME = "app_theme";
+const BOARDS = "kanban_boards";
 
-const THEMES = ['light', 'dark'] as const;
+const THEMES = ["light", "dark"] as const;
 export type StoredTheme = (typeof THEMES)[number];
 
 export function getAuth(): Auth | undefined {
@@ -12,7 +12,7 @@ export function getAuth(): Auth | undefined {
     const raw = localStorage.getItem(AUTH);
     return raw ? (JSON.parse(raw) as Auth) : undefined;
   } catch (error) {
-    console.error('Error getting auth from localStorage:', error);
+    console.error("Error getting auth from localStorage:", error);
     return undefined;
   }
 }
@@ -21,7 +21,7 @@ export function setAuth(auth: Auth) {
   try {
     localStorage.setItem(AUTH, JSON.stringify(auth));
   } catch (error) {
-    console.error('Error setting auth in localStorage:', error);
+    console.error("Error setting auth in localStorage:", error);
   }
 }
 
@@ -42,7 +42,7 @@ export function setTheme(theme: StoredTheme) {
   try {
     localStorage.setItem(THEME, theme);
   } catch (error) {
-    console.error('Error setting theme in localStorage:', error);
+    console.error("Error setting theme in localStorage:", error);
   }
 }
 
@@ -51,7 +51,7 @@ export function getBoards(): BoardsData | undefined {
     const raw = localStorage.getItem(BOARDS);
     return raw ? (JSON.parse(raw) as BoardsData) : undefined;
   } catch (error) {
-    console.error('Error getting boards from localStorage:', error);
+    console.error("Error getting boards from localStorage:", error);
     return undefined;
   }
 }
@@ -60,6 +60,6 @@ export function setBoards(boards: BoardsData) {
   try {
     localStorage.setItem(BOARDS, JSON.stringify(boards));
   } catch (error) {
-    console.error('Error setting boards in localStorage:', error);
+    console.error("Error setting boards in localStorage:", error);
   }
 }

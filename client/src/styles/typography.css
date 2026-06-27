@@ -1,7 +1,7 @@
 @layer components {
   /* Typography - Plus Jakarta Sans (color from theme) */
   .heading-xl {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 24px;
     line-height: 30px;
@@ -9,7 +9,7 @@
   }
 
   .heading-l {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 18px;
     line-height: 23px;
@@ -17,7 +17,7 @@
   }
 
   .heading-m {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 15px;
     line-height: 19px;
@@ -25,7 +25,7 @@
   }
 
   .heading-s {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 12px;
     line-height: 15px;
@@ -33,14 +33,14 @@
   }
 
   .body-l {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 500;
     font-size: 13px;
     line-height: 23px;
   }
 
   .body-m {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 700;
     font-size: 12px;
     line-height: 19px;

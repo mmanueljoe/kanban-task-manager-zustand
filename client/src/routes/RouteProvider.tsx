@@ -1,12 +1,12 @@
-import { Route, Routes, useLocation } from 'react-router';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Layout } from '@components/layout/Layout';
-import { Login } from '@pages/Login';
-import { NotFound } from '@pages/NotFound';
-import { Dashboard } from '@pages/Dashboard';
-import { BoardView } from '@pages/BoardView';
-import { Admin } from '@pages/Admin';
-import { ProtectedRoute } from '@components/ProtectedRoute';
+import { Route, Routes, useLocation } from "react-router";
+import { AnimatePresence, motion } from "framer-motion";
+import { Layout } from "@components/layout/Layout";
+import { Login } from "@pages/Login";
+import { NotFound } from "@pages/NotFound";
+import { Dashboard } from "@pages/Dashboard";
+import { BoardView } from "@pages/BoardView";
+import { Admin } from "@pages/Admin";
+import { ProtectedRoute } from "@components/ProtectedRoute";
 
 const pageVariants = {
   initial: {
@@ -24,8 +24,8 @@ const pageVariants = {
 };
 
 const pageTransition = {
-  type: 'tween' as const,
-  ease: 'easeInOut' as const,
+  type: "tween" as const,
+  ease: "easeInOut" as const,
   duration: 0.3,
 };
 

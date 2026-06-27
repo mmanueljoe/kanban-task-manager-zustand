@@ -1,4 +1,4 @@
-export type UserRole = 'ADMIN' | 'USER';
+export type UserRole = "ADMIN" | "USER";
 
 export class User {
   private readonly _id: string;
@@ -14,15 +14,15 @@ export class User {
     passwordHash: string;
     role?: UserRole;
   }) {
-    if (!params.name.trim()) throw new Error('User name is required');
-    if (!params.email.trim()) throw new Error('User email is required');
-    if (!params.passwordHash) throw new Error('User passwordHash is required');
+    if (!params.name.trim()) throw new Error("User name is required");
+    if (!params.email.trim()) throw new Error("User email is required");
+    if (!params.passwordHash) throw new Error("User passwordHash is required");
 
     this._id = params.id;
     this._name = params.name;
     this._email = params.email;
     this._passwordHash = params.passwordHash;
-    this._role = params.role ?? 'USER';
+    this._role = params.role ?? "USER";
   }
 
   get id(): string {
@@ -43,16 +43,16 @@ export class User {
   }
 
   rename(newName: string): void {
-    if (!newName.trim()) throw new Error('User name is required');
+    if (!newName.trim()) throw new Error("User name is required");
     this._name = newName;
   }
 
   promoteToAdmin(): void {
-    this._role = 'ADMIN';
+    this._role = "ADMIN";
   }
 
   isAdmin(): boolean {
-    return this._role === 'ADMIN';
+    return this._role === "ADMIN";
   }
 
   toPublicProfile(): {
