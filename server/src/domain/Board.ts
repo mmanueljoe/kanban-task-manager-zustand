@@ -1,13 +1,13 @@
-type BoardAccessLevel = "OWNER" | CollaboratorRole;
+export type BoardAccessLevel = "OWNER" | CollaboratorRole;
 
-type CollaboratorRole = "EDITOR" | "VIEWER";
+export type CollaboratorRole = "EDITOR" | "VIEWER";
 
-type Collaborator = {
+export type Collaborator = {
   userId: string;
   role: CollaboratorRole;
 };
 
-class Board {
+export class Board {
   private readonly _boardId: string;
   private _ownerId: string;
   private _name: string;

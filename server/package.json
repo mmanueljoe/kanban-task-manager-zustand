@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo \"TODO: wire up jest/vitest when you reach the test step\" && exit 0",
+    "test": "vitest run",
     "lint": "echo \"TODO: add eslint config for the server package\" && exit 0"
   },
   "dependencies": {
@@ -16,6 +16,7 @@
   "devDependencies": {
     "@types/node": "^24.10.1",
     "tsx": "^4.20.0",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.9"
   }
 }
