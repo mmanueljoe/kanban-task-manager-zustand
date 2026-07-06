@@ -24,6 +24,10 @@ tsconfig.app.tsbuildinfo
 # Test coverage
 coverage
 
+# Prisma-generated client (regenerated from schema.prisma via `prisma generate`)
+src/generated/
+**/src/generated/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

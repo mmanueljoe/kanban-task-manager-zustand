@@ -8,7 +8,7 @@ export type Collaborator = {
 };
 
 export class Board {
-  private readonly _boardId: string;
+  private readonly _id: string;
   private _ownerId: string;
   private _name: string;
   private _collaboratorList: Collaborator[];
@@ -22,14 +22,14 @@ export class Board {
     if (!params.name.trim()) throw new Error("Board name can't be empty");
     if (!params.ownerId.trim()) throw new Error("An owner id is required");
 
-    this._boardId = params.boardId;
+    this._id = params.boardId;
     this._ownerId = params.ownerId;
     this._name = params.name;
     this._collaboratorList = params.collaborators ?? [];
   }
 
   get id(): string {
-    return this._boardId;
+    return this._id;
   }
 
   get ownerId(): string {
