@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router";
 import { useRef, useState, useEffect, memo, useMemo } from "react";
 import { useBoards } from "@/hooks/useBoards";
 import { useCurrentBoard } from "@/hooks/useCurrentBoard";
-import { useAuth } from "@/hooks/useAuth";
+import { useMe, useLogout } from "@hooks/useAuthQueries";
 import { ThemeToggle } from "@components/ui/ThemeToggle";
 import logoMobile from "@assets/logo-mobile.svg";
 import iconChevronDown from "@assets/icon-chevron-down.svg";
@@ -58,7 +58,8 @@ export function Header({
 }: HeaderProps) {
   const { boards } = useBoards();
   const { board, boardIndex } = useCurrentBoard();
-  const { user, logout } = useAuth();
+  const { data: user } = useMe();
+  const logout = useLogout();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -88,8 +89,9 @@ export function Header({
   );
 
   const handleLogout = () => {
-    logout();
-    void navigate("/login", { replace: true });
+    logout.mutate(undefined, {
+      onSuccess: () => void navigate("/login", { replace: true }),
+    });
   };
 
   const userInitial =

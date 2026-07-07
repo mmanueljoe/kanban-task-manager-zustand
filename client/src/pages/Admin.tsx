@@ -1,14 +1,16 @@
 import { Button } from "@components/ui/Button";
-import { useAuth } from "@hooks/useAuth";
+import { useMe, useLogout } from "@hooks/useAuthQueries";
 import { useNavigate } from "react-router";
 
 export function Admin() {
-  const { user, logout } = useAuth();
+  const { data: user } = useMe();
+  const logout = useLogout();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
-    void navigate("/login", { replace: true });
+    logout.mutate(undefined, {
+      onSuccess: () => void navigate("/login", { replace: true }),
+    });
   };
 
   return (
