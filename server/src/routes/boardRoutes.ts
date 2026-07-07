@@ -12,6 +12,7 @@ boardRoutes.use(authenticate);
 boardRoutes.post("/", validateBody(board.createBoardSchema), board.createBoard);
 boardRoutes.get("/", board.listBoards);
 boardRoutes.get("/:boardId", board.getBoard);
+boardRoutes.get("/:boardId/full", board.getBoardContents);
 boardRoutes.patch(
   "/:boardId",
   validateBody(board.renameBoardSchema),

@@ -6,7 +6,7 @@ import { Button } from "@components/ui/Button";
 import { AddColumnModal } from "@components/modals/AddColumnModal";
 import { TaskDetailsModal } from "@components/modals/TaskDetailsModal";
 import { useCurrentBoard } from "@/hooks/useCurrentBoard";
-import { useColumns } from "@/hooks/useColumnQueries";
+import { useBoardContents } from "@/hooks/useBoardQueries";
 import { useTasks, useMoveTask } from "@/hooks/useTaskQueries";
 import { useUi } from "@/hooks/useUi";
 import { keys } from "@/lib/keys";
@@ -111,7 +111,7 @@ const DroppableColumn = memo(function DroppableColumn({
 
 export function BoardView() {
   const { boardId, board, isPending } = useCurrentBoard();
-  const columnsQuery = useColumns(boardId ?? "");
+  const contents = useBoardContents(boardId ?? "");
   const move = useMoveTask();
   const qc = useQueryClient();
   const { showToast } = useUi();
@@ -163,7 +163,7 @@ export function BoardView() {
     );
   };
 
-  if (isPending || (boardId && columnsQuery.isPending)) {
+  if (isPending || (boardId && contents.isPending)) {
     return <div className="app-main app-main-board">Loading board…</div>;
   }
 
@@ -181,7 +181,7 @@ export function BoardView() {
     );
   }
 
-  const columns = columnsQuery.data ?? [];
+  const columns = contents.data?.columns ?? [];
 
   if (columns.length === 0) {
     return (

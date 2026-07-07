@@ -65,3 +65,12 @@ export type TaskDTO = {
   position: number;
   subtasks: SubtaskDTO[];
 };
+
+// The whole board in one payload — board + its columns + all its tasks (flat).
+// Lets the client render a board in a single request instead of one call per
+// column, then hydrate the per-column task caches from it.
+export type BoardContentsDTO = {
+  board: BoardDTO;
+  columns: ColumnDTO[];
+  tasks: TaskDTO[];
+};

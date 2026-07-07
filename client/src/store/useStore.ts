@@ -1,26 +1,14 @@
 import { create } from "zustand";
-import type { BoardsState, BoardsAction, User, UiToast } from "@/types/types";
-import { boardsReducer } from "@/utils/boardsReducer";
-import {
-  getTheme,
-  setTheme as persistTheme,
-  getAuth,
-  setAuth as persistAuth,
-} from "@/utils/localStorage";
+import type { UiToast } from "@/types/types";
+import { getTheme, setTheme as persistTheme } from "@/utils/localStorage";
 
 const storedTheme = getTheme();
-const storedAuth = getAuth();
 
-export type AppStore = BoardsState & {
-  dispatch: (action: BoardsAction) => void;
-
+// Client-only state. Server data (boards/columns/tasks/auth) lives in TanStack
+// Query, not here.
+export type AppStore = {
   theme: "light" | "dark";
   setTheme: (theme: "light" | "dark") => void;
-
-  user: User | null;
-  isLoggedIn: boolean;
-  login: (user: User) => void;
-  logout: () => void;
 
   loadingKeys: string[];
   toasts: UiToast[];
@@ -31,26 +19,10 @@ export type AppStore = BoardsState & {
 };
 
 export const useStore = create<AppStore>((set) => ({
-  boards: [],
-  dispatch: (action: BoardsAction) => {
-    set((state) => boardsReducer(state, action));
-  },
-
   theme: storedTheme ?? "light",
   setTheme: (theme: "light" | "dark") => {
     set({ theme });
     persistTheme(theme);
-  },
-
-  user: storedAuth?.isLoggedIn && storedAuth.user ? storedAuth.user : null,
-  isLoggedIn: storedAuth?.isLoggedIn ?? false,
-  login: (user: User) => {
-    set({ user, isLoggedIn: true });
-    persistAuth({ isLoggedIn: true, user });
-  },
-  logout: () => {
-    set({ user: null, isLoggedIn: false });
-    persistAuth({ isLoggedIn: false, user: null });
   },
 
   loadingKeys: [],

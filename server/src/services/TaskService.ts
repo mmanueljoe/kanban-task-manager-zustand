@@ -31,6 +31,18 @@ export class TaskService {
     return this.tasks.create(task);
   }
 
+  // Any access level may read every task on a board (for the composite fetch).
+  async listTasksByBoard(userId: string, boardId: string): Promise<Task[]> {
+    const board = await this.boards.findById(boardId);
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+    if (board.getAccessLevel(userId) === null) {
+      throw new NotAuthorizedError("You don't have access to this board");
+    }
+    return this.tasks.findByBoardId(boardId);
+  }
+
   // Any access level may read a column's tasks.
   async listTasks(userId: string, columnId: string): Promise<Task[]> {
     const column = await this.columns.findById(columnId);

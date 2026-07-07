@@ -50,6 +50,17 @@ export class TaskRepository {
     return rows.map(toDomain);
   }
 
+  // Every task on a board (across all its columns) in one query — powers the
+  // composite board-contents endpoint.
+  async findByBoardId(boardId: string): Promise<Task[]> {
+    const rows = await prisma.task.findMany({
+      where: { column: { boardId } },
+      orderBy: { position: "asc" },
+      include: { subtasks: true },
+    });
+    return rows.map(toDomain);
+  }
+
   // Task's own fields, including columnId — moving a task to another column is
   // just changing that value (the column is the status).
   async update(task: Task): Promise<void> {
