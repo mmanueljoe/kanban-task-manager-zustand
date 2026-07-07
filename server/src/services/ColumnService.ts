@@ -21,6 +21,18 @@ export class ColumnService {
     return this.columns.create(column);
   }
 
+  // Any access level may read a board's columns.
+  async listColumns(userId: string, boardId: string): Promise<Column[]> {
+    const board = await this.boards.findById(boardId);
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+    if (board.getAccessLevel(userId) === null) {
+      throw new NotAuthorizedError("You don't have access to this board");
+    }
+    return this.columns.findByBoardId(boardId);
+  }
+
   async renameColumn(
     userId: string,
     columnId: string,

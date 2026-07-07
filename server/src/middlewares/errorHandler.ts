@@ -1,5 +1,5 @@
 import type { ErrorRequestHandler } from "express";
-import { AppError } from "@/errors/AppError.js";
+import { AppError, ValidationError } from "@/errors/AppError.js";
 import { failure } from "@/utils/apiResponse.js";
 import { logger } from "@/config/logger.js";
 
@@ -8,7 +8,9 @@ import { logger } from "@/config/logger.js";
 // else is an unexpected bug → generic 500, logged in full but never leaked.
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof AppError) {
-    res.status(err.statusCode).json(failure(err.message));
+    const fieldErrors =
+      err instanceof ValidationError ? err.fieldErrors : undefined;
+    res.status(err.statusCode).json(failure(err.message, fieldErrors));
     return;
   }
 

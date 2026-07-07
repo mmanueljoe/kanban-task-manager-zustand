@@ -8,9 +8,13 @@ export class AppError extends Error {
   }
 }
 
-// 400 — the input was malformed or broke a rule.
+// 400 — the input was malformed or broke a rule. Optionally carries per-field
+// messages so the client can highlight the exact inputs that failed.
 export class ValidationError extends AppError {
-  constructor(message: string) {
+  constructor(
+    message: string,
+    public readonly fieldErrors?: Record<string, string>
+  ) {
     super(message, 400);
   }
 }

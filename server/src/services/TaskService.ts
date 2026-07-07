@@ -31,6 +31,22 @@ export class TaskService {
     return this.tasks.create(task);
   }
 
+  // Any access level may read a column's tasks.
+  async listTasks(userId: string, columnId: string): Promise<Task[]> {
+    const column = await this.columns.findById(columnId);
+    if (!column) {
+      throw new NotFoundError("Column not found");
+    }
+    const board = await this.boards.findById(column.boardId);
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+    if (board.getAccessLevel(userId) === null) {
+      throw new NotAuthorizedError("You don't have access to this board");
+    }
+    return this.tasks.findByColumnId(columnId);
+  }
+
   async editTask(
     userId: string,
     taskId: string,
