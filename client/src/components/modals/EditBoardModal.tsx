@@ -1,80 +1,86 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import type { BoardDTO, ColumnDTO } from "@kanban/shared";
 import { Modal } from "@components/ui/Modal";
 import { Button } from "@components/ui/Button";
 import iconCross from "@assets/icon-cross.svg";
-import { useStore } from "@/store/useStore";
+import { api } from "@/lib/api";
+import { keys } from "@/lib/keys";
 import { useUi } from "@/hooks/useUi";
-import type { Board } from "@/types/types";
 
 type EditBoardModalProps = {
   open: boolean;
   onClose: () => void;
-  boardName: string;
-  columnNames: string[];
-  boardIndex: number | null;
-  originalBoard: Board;
+  board: BoardDTO;
+  columns: ColumnDTO[];
 };
+
+// A column being edited: existing ones carry their id, new ones have id: null.
+type EditableColumn = { id: string | null; name: string };
 
 export function EditBoardModal({
   open,
   onClose,
-  boardName: initialName,
-  columnNames: initialColumns,
-  boardIndex,
-  originalBoard,
+  board,
+  columns,
 }: EditBoardModalProps) {
-  const dispatch = useStore((state) => state.dispatch);
-  const { startLoading, stopLoading, showToast } = useUi();
-  const [name, setName] = useState(initialName);
-  const [columns, setColumns] = useState(initialColumns);
+  const qc = useQueryClient();
+  const { showToast } = useUi();
+  const [name, setName] = useState(board.name);
+  const [cols, setCols] = useState<EditableColumn[]>(
+    columns.map((c) => ({ id: c.id, name: c.name }))
+  );
+  const [submitting, setSubmitting] = useState(false);
 
-  const addColumn = () => setColumns((c) => [...c, ""]);
+  const addColumn = () => setCols((c) => [...c, { id: null, name: "" }]);
   const removeColumn = (i: number) =>
-    setColumns((c) => c.filter((_, idx) => idx !== i));
+    setCols((c) => c.filter((_, idx) => idx !== i));
   const updateColumn = (i: number, v: string) =>
-    setColumns((c) => {
-      const next = [...c];
-      next[i] = v;
-      return next;
-    });
+    setCols((c) =>
+      c.map((col, idx) => (idx === i ? { ...col, name: v } : col))
+    );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (boardIndex == null) {
-      showToast({
-        type: "error",
-        message: "Could not update board. Please try again.",
-      });
-      onClose();
+    if (!name.trim()) {
+      showToast({ type: "error", message: "A board needs a name." });
       return;
     }
-    const cleanedColumns = columns
-      .map((c) => c.trim())
-      .filter((c) => c.length > 0);
 
-    const updatedColumns = cleanedColumns.map((colName) => {
-      const existing = originalBoard.columns.find((c) => c.name === colName);
-      return existing
-        ? { ...existing, name: colName }
-        : { name: colName, tasks: [] };
-    });
-
-    const updatedBoard: Board = {
-      ...originalBoard,
-      name: name.trim() || originalBoard.name,
-      columns: updatedColumns,
-    };
-    startLoading("editBoard");
+    setSubmitting(true);
     try {
-      dispatch({
-        type: "UPDATE_BOARD",
-        payload: { boardIndex, board: updatedBoard },
-      });
+      if (name.trim() !== board.name) {
+        await api.patch(`/boards/${board.id}`, { name: name.trim() });
+      }
+      // Columns the user removed (originals no longer present) → delete (cascades tasks).
+      const keptIds = new Set(cols.filter((c) => c.id).map((c) => c.id));
+      for (const original of columns) {
+        if (!keptIds.has(original.id)) {
+          await api.delete(`/columns/${original.id}`);
+        }
+      }
+      // Rename changed existing columns; create the new ones.
+      for (const c of cols) {
+        const columnName = c.name.trim();
+        if (!columnName) continue;
+        if (c.id) {
+          const original = columns.find((o) => o.id === c.id);
+          if (original && original.name !== columnName) {
+            await api.patch(`/columns/${c.id}`, { name: columnName });
+          }
+        } else {
+          await api.post(`/boards/${board.id}/columns`, { name: columnName });
+        }
+      }
+      qc.invalidateQueries({ queryKey: keys.columns(board.id) });
+      qc.invalidateQueries({ queryKey: keys.boardList() });
+      qc.invalidateQueries({ queryKey: keys.board(board.id) });
       showToast({ type: "success", message: "Board updated" });
-    } finally {
-      stopLoading("editBoard");
       onClose();
+    } catch {
+      showToast({ type: "error", message: "Couldn't update the board." });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -96,12 +102,12 @@ export function EditBoardModal({
           <label className="input-label app-modal-sublist-label">
             Board Columns
           </label>
-          {columns.map((val, i) => (
-            <div key={i} className="app-modal-sublist-row">
+          {cols.map((col, i) => (
+            <div key={col.id ?? `new-${i}`} className="app-modal-sublist-row">
               <input
                 type="text"
                 className="input app-modal-sublist-input"
-                value={val}
+                value={col.name}
                 onChange={(e) => updateColumn(i, e.target.value)}
               />
               <button
@@ -125,8 +131,13 @@ export function EditBoardModal({
           </Button>
         </div>
         <div className="app-modal-actions">
-          <Button type="submit" variant="primary" size="large">
-            Save Changes
+          <Button
+            type="submit"
+            variant="primary"
+            size="large"
+            disabled={submitting}
+          >
+            {submitting ? "Saving…" : "Save Changes"}
           </Button>
         </div>
       </form>

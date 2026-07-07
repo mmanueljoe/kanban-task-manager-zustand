@@ -5,6 +5,7 @@ import { Header } from "@components/layout/Header";
 import { Aside } from "@components/layout/Aside";
 import { AddTaskModal } from "@components/modals/AddTaskModal";
 import { DeleteBoardModal } from "@components/modals/DeleteBoardModal";
+import { EditBoardModal } from "@components/modals/EditBoardModal";
 import { AddBoardModal } from "@components/modals/AddBoardModal";
 import { useCurrentBoard } from "@/hooks/useCurrentBoard";
 import { useColumns } from "@/hooks/useColumnQueries";
@@ -46,6 +47,7 @@ export function Layout() {
   const { data: columns = [] } = useColumns(boardId ?? "");
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [addBoardOpen, setAddBoardOpen] = useState(false);
+  const [editBoardOpen, setEditBoardOpen] = useState(false);
   const [deleteBoardOpen, setDeleteBoardOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
@@ -71,6 +73,7 @@ export function Layout() {
         <Header
           onAddTask={() => setAddTaskOpen(true)}
           onCreateBoard={() => setAddBoardOpen(true)}
+          onEditBoard={() => setEditBoardOpen(true)}
           onDeleteBoard={() => setDeleteBoardOpen(true)}
           canEditBoard={board != null}
         />
@@ -89,13 +92,21 @@ export function Layout() {
         columns={columns}
       />
       {board && (
-        <DeleteBoardModal
-          open={deleteBoardOpen}
-          onClose={() => setDeleteBoardOpen(false)}
-          onConfirm={() => void navigate("/", { replace: true })}
-          boardName={board.name}
-          boardId={boardId}
-        />
+        <>
+          <EditBoardModal
+            open={editBoardOpen}
+            onClose={() => setEditBoardOpen(false)}
+            board={board}
+            columns={columns}
+          />
+          <DeleteBoardModal
+            open={deleteBoardOpen}
+            onClose={() => setDeleteBoardOpen(false)}
+            onConfirm={() => void navigate("/", { replace: true })}
+            boardName={board.name}
+            boardId={boardId}
+          />
+        </>
       )}
     </div>
   );

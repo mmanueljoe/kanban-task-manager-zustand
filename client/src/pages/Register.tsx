@@ -2,34 +2,42 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router";
 import { Button } from "@components/ui/Button";
 import { Input } from "@components/ui/Input";
-import { useLogin } from "@hooks/useAuthQueries";
+import { useRegister } from "@hooks/useAuthQueries";
 import { ApiError } from "@/lib/api";
 
-export function Login() {
+export function Register() {
   const navigate = useNavigate();
-  const login = useLogin();
+  const register = useRegister();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const fieldErrors =
-    login.error instanceof ApiError ? login.error.fieldErrors : undefined;
+    register.error instanceof ApiError ? register.error.fieldErrors : undefined;
   const generalError =
-    login.error instanceof ApiError && !fieldErrors
-      ? login.error.message
+    register.error instanceof ApiError && !fieldErrors
+      ? register.error.message
       : undefined;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    login.mutate(
-      { email, password },
+    register.mutate(
+      { name, email, password },
       { onSuccess: () => void navigate("/", { replace: true }) }
     );
   };
 
   return (
     <div className="app-login">
-      <h1 className="heading-xl app-section-title">Log in</h1>
+      <h1 className="heading-xl app-section-title">Create account</h1>
       <form onSubmit={handleSubmit} className="app-stack-4 app-login-form">
+        <Input
+          label="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          error={fieldErrors?.name}
+          required
+        />
         <Input
           label="Email"
           type="email"
@@ -51,12 +59,12 @@ export function Login() {
           type="submit"
           variant="primary"
           size="large"
-          disabled={login.isPending}
+          disabled={register.isPending}
         >
-          {login.isPending ? "Logging in…" : "Log in"}
+          {register.isPending ? "Creating account…" : "Create account"}
         </Button>
         <p className="body-m">
-          Don&apos;t have an account? <Link to="/register">Create one</Link>
+          Already have an account? <Link to="/login">Log in</Link>
         </p>
       </form>
     </div>

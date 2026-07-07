@@ -2,6 +2,7 @@ import { Route, Routes, useLocation } from "react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { Layout } from "@components/layout/Layout";
 import { Login } from "@pages/Login";
+import { Register } from "@pages/Register";
 import { NotFound } from "@pages/NotFound";
 import { Dashboard } from "@pages/Dashboard";
 import { BoardView } from "@pages/BoardView";
@@ -69,6 +70,14 @@ export function RouteProvider() {
         element={
           <AnimatedPage>
             <Login />
+          </AnimatedPage>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <AnimatedPage>
+            <Register />
           </AnimatedPage>
         }
       />

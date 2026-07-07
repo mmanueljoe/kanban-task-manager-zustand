@@ -243,6 +243,7 @@ export function BoardView() {
           taskId={selected.taskId}
           columnId={selected.columnId}
           columnName={selected.columnName}
+          columns={columns}
         />
       )}
     </div>

@@ -1,53 +1,70 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import type { ColumnDTO, TaskDTO } from "@kanban/shared";
 import { Modal } from "@components/ui/Modal";
 import { Button } from "@components/ui/Button";
 import { Dropdown } from "@components/ui/Dropdown";
-import iconCross from "@assets/icon-cross.svg";
+import { api } from "@/lib/api";
+import { keys } from "@/lib/keys";
 import { useUi } from "@/hooks/useUi";
 
 type EditTaskModalProps = {
   open: boolean;
   onClose: () => void;
-  columnOptions: { value: string; label: string }[];
-  initialTitle?: string;
-  initialDescription?: string;
-  initialSubtasks?: string[];
-  initialStatus?: string;
+  task: TaskDTO;
+  columns: ColumnDTO[];
 };
 
 export function EditTaskModal({
   open,
   onClose,
-  columnOptions,
-  initialTitle = "",
-  initialDescription = "",
-  initialSubtasks = ["", ""],
-  initialStatus = "",
+  task,
+  columns,
 }: EditTaskModalProps) {
+  const qc = useQueryClient();
   const { showToast } = useUi();
-  const [title, setTitle] = useState(initialTitle);
-  const [description, setDescription] = useState(initialDescription);
-  const [subtasks, setSubtasks] = useState(
-    initialSubtasks.length > 0 ? initialSubtasks : [""]
-  );
-  const [status, setStatus] = useState(
-    (initialStatus || columnOptions[0]?.value) ?? ""
-  );
+  const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description);
+  const [columnId, setColumnId] = useState(task.columnId);
+  const [submitting, setSubmitting] = useState(false);
 
-  const addSubtask = () => setSubtasks((s) => [...s, ""]);
-  const removeSubtask = (i: number) =>
-    setSubtasks((s) => s.filter((_, idx) => idx !== i));
-  const updateSubtask = (i: number, v: string) =>
-    setSubtasks((s) => {
-      const next = [...s];
-      next[i] = v;
-      return next;
-    });
+  const options = columns.map((c) => ({ value: c.id, label: c.name }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    showToast({ type: "success", message: "Task changes saved" });
-    onClose();
+    if (!title.trim()) {
+      showToast({ type: "error", message: "A task needs a title." });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await api.patch(`/tasks/${task.id}`, {
+        title: title.trim(),
+        description: description.trim(),
+      });
+      const movedColumns = columnId !== task.columnId;
+      if (movedColumns) {
+        const toTasks = qc.getQueryData<TaskDTO[]>(keys.tasks(columnId)) ?? [];
+        const lastPos = toTasks.length
+          ? Math.max(...toTasks.map((t) => t.position))
+          : 0;
+        await api.patch(`/tasks/${task.id}/move`, {
+          toColumnId: columnId,
+          position: lastPos + 1000,
+        });
+      }
+      qc.invalidateQueries({ queryKey: keys.tasks(task.columnId) });
+      if (movedColumns) {
+        qc.invalidateQueries({ queryKey: keys.tasks(columnId) });
+      }
+      showToast({ type: "success", message: "Task updated" });
+      onClose();
+    } catch {
+      showToast({ type: "error", message: "Couldn't update the task." });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -59,7 +76,6 @@ export function EditTaskModal({
           <input
             type="text"
             className="input"
-            placeholder="e.g. Take coffee break."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -68,56 +84,28 @@ export function EditTaskModal({
           <label className="input-label">Description</label>
           <textarea
             className="input input-textarea"
-            placeholder="e.g. It's always good to take a break."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
           />
         </div>
-        <div className="app-modal-sublist">
-          <label className="input-label app-modal-sublist-label">
-            Subtasks
-          </label>
-          {subtasks.map((val, i) => (
-            <div key={i} className="app-modal-sublist-row">
-              <input
-                type="text"
-                className="input app-modal-sublist-input"
-                value={val}
-                onChange={(e) => updateSubtask(i, e.target.value)}
-              />
-              <button
-                type="button"
-                onClick={() => removeSubtask(i)}
-                aria-label="Remove subtask"
-                className="app-icon-button"
-              >
-                <img src={iconCross} alt="" width={14} height={14} />
-              </button>
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="secondary"
-            size="large"
-            onClick={addSubtask}
-            className="btn-block"
-          >
-            + Add New Subtask
-          </Button>
-        </div>
         <div className="input-wrap app-modal-field">
           <label className="input-label">Status</label>
           <Dropdown
-            options={columnOptions}
-            value={status}
-            onChange={setStatus}
-            placeholder="Todo"
+            options={options}
+            value={columnId}
+            onChange={setColumnId}
+            placeholder="Select a column"
           />
         </div>
         <div className="app-modal-actions">
-          <Button type="submit" variant="primary" size="large">
-            Save Changes
+          <Button
+            type="submit"
+            variant="primary"
+            size="large"
+            disabled={submitting}
+          >
+            {submitting ? "Saving…" : "Save Changes"}
           </Button>
         </div>
       </form>

@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
+import type { ColumnDTO } from "@kanban/shared";
 import { Modal } from "../ui/Modal";
 import { Checkbox } from "../ui/Checkbox";
+import { EditTaskModal } from "./EditTaskModal";
 import {
   useTasks,
   useToggleSubtask,
@@ -15,6 +17,7 @@ type TaskDetailsModalProps = {
   taskId: string | null;
   columnId: string | null;
   columnName: string | null;
+  columns: ColumnDTO[];
 };
 
 export function TaskDetailsModal({
@@ -23,6 +26,7 @@ export function TaskDetailsModal({
   taskId,
   columnId,
   columnName,
+  columns,
 }: TaskDetailsModalProps) {
   // Read the task live from the column's cache so a subtask toggle (which
   // refetches that column) is reflected here immediately.
@@ -32,6 +36,7 @@ export function TaskDetailsModal({
   const { showToast } = useUi();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,6 +68,20 @@ export function TaskDetailsModal({
     });
   };
 
+  if (editOpen) {
+    return (
+      <EditTaskModal
+        open
+        onClose={() => {
+          setEditOpen(false);
+          onClose();
+        }}
+        task={task}
+        columns={columns}
+      />
+    );
+  }
+
   return (
     <Modal open={open} onClose={onClose} aria-label="Task details">
       <div className="app-modal-header-row">
@@ -80,6 +99,17 @@ export function TaskDetailsModal({
           </button>
           {menuOpen && (
             <div role="menu" className="app-menu-panel app-menu-panel--wide">
+              <button
+                type="button"
+                role="menuitem"
+                className="dropdown-option app-menu-item"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setEditOpen(true);
+                }}
+              >
+                Edit Task
+              </button>
               <button
                 type="button"
                 role="menuitem"
