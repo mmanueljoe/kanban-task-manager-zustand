@@ -26,6 +26,19 @@ export class UserRepository {
     return toDomain(row);
   }
 
+  async update(user: User): Promise<User> {
+    const row = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        name: user.name,
+        email: user.email,
+        passwordHash: user.passwordHash,
+        role: user.role,
+      },
+    });
+    return toDomain(row);
+  }
+
   async findById(id: string): Promise<User | null> {
     const row = await prisma.user.findUnique({ where: { id } });
     return row ? toDomain(row) : null;

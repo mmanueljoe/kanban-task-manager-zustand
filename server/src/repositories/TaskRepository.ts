@@ -49,4 +49,66 @@ export class TaskRepository {
     });
     return rows.map(toDomain);
   }
+
+  // Task's own fields, including columnId — moving a task to another column is
+  // just changing that value (the column is the status).
+  async update(task: Task): Promise<void> {
+    await prisma.task.update({
+      where: { id: task.id },
+      data: {
+        columnId: task.columnId,
+        title: task.title,
+        description: task.description,
+        position: task.position,
+      },
+    });
+  }
+
+  async delete(id: string): Promise<void> {
+    await prisma.task.delete({ where: { id } });
+  }
+
+  async maxPosition(columnId: string): Promise<number> {
+    const result = await prisma.task.aggregate({
+      where: { columnId },
+      _max: { position: true },
+    });
+    return result._max.position ?? 0;
+  }
+
+  // Subtasks are child rows. The task entity validates the change first (no
+  // empty title, no duplicate, must exist); these just persist the one row.
+  async addSubtask(
+    taskId: string,
+    subtask: { id: string; title: string; isCompleted: boolean }
+  ): Promise<void> {
+    const result = await prisma.subtask.aggregate({
+      where: { taskId },
+      _max: { position: true },
+    });
+    const position = (result._max.position ?? 0) + 1000;
+    await prisma.subtask.create({
+      data: {
+        id: subtask.id,
+        taskId,
+        title: subtask.title,
+        isCompleted: subtask.isCompleted,
+        position,
+      },
+    });
+  }
+
+  async setSubtaskCompleted(
+    subtaskId: string,
+    isCompleted: boolean
+  ): Promise<void> {
+    await prisma.subtask.update({
+      where: { id: subtaskId },
+      data: { isCompleted },
+    });
+  }
+
+  async removeSubtask(subtaskId: string): Promise<void> {
+    await prisma.subtask.delete({ where: { id: subtaskId } });
+  }
 }
