@@ -33,6 +33,14 @@ export class UserService {
     return this.users.create(user);
   }
 
+  async getById(id: string): Promise<User> {
+    const user = await this.users.findById(id);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+    return user;
+  }
+
   async login(input: { email: string; password: string }): Promise<User> {
     const user = await this.users.findByEmail(input.email);
     if (!user) {
