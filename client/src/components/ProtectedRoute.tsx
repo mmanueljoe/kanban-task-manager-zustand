@@ -1,8 +1,18 @@
 import { Navigate } from "react-router";
-import { useAuth } from "@hooks/useAuth";
+import { useMe } from "@hooks/useAuthQueries";
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isLoggedIn } = useAuth();
-  if (!isLoggedIn) return <Navigate to="/login" replace />;
+export function ProtectedRoute({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const { data: user, isPending } = useMe();
+
+  if (isPending) {
+    return <div className="app-main">Loading…</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <>{children}</>;
 }

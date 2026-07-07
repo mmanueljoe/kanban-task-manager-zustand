@@ -10,6 +10,7 @@ import { errorHandler } from "@/middlewares/errorHandler.js";
 import { httpLogger } from "@/config/logger.js";
 
 export const app = express();
+app.disable("x-powered-by");
 
 app.use(httpLogger);
 
