@@ -1,28 +1,19 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { Header } from "@components/layout/Header";
 import { Aside } from "@components/layout/Aside";
 import { AddTaskModal } from "@components/modals/AddTaskModal";
-import { EditBoardModal } from "@components/modals/EditBoardModal";
 import { DeleteBoardModal } from "@components/modals/DeleteBoardModal";
 import { AddBoardModal } from "@components/modals/AddBoardModal";
 import { useCurrentBoard } from "@/hooks/useCurrentBoard";
+import { useColumns } from "@/hooks/useColumnQueries";
 import iconShowSidebar from "@assets/icon-show-sidebar.svg";
 
 const pageVariants = {
-  initial: {
-    opacity: 0,
-    y: 20,
-  },
-  animate: {
-    opacity: 1,
-    y: 0,
-  },
-  exit: {
-    opacity: 0,
-    y: -20,
-  },
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
 };
 
 const pageTransition = {
@@ -33,7 +24,6 @@ const pageTransition = {
 
 function AnimatedOutlet() {
   const location = useLocation();
-
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -52,22 +42,13 @@ function AnimatedOutlet() {
 }
 
 export function Layout() {
-  const { board, boardIndex } = useCurrentBoard();
+  const { board, boardId } = useCurrentBoard();
+  const { data: columns = [] } = useColumns(boardId ?? "");
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [addBoardOpen, setAddBoardOpen] = useState(false);
-  const [editBoardOpen, setEditBoardOpen] = useState(false);
   const [deleteBoardOpen, setDeleteBoardOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
-
-  const currentBoard = board;
-
-  const columnOptions = useMemo(
-    () =>
-      currentBoard?.columns.map((c) => ({ value: c.name, label: c.name })) ??
-      [],
-    [currentBoard?.columns]
-  );
 
   return (
     <div
@@ -90,14 +71,14 @@ export function Layout() {
         <Header
           onAddTask={() => setAddTaskOpen(true)}
           onCreateBoard={() => setAddBoardOpen(true)}
-          onEditBoard={() => setEditBoardOpen(true)}
           onDeleteBoard={() => setDeleteBoardOpen(true)}
-          canEditBoard={currentBoard != null}
+          canEditBoard={board != null}
         />
         <main className="app-layout-main">
           <AnimatedOutlet />
         </main>
       </div>
+
       <AddBoardModal
         open={addBoardOpen}
         onClose={() => setAddBoardOpen(false)}
@@ -105,33 +86,16 @@ export function Layout() {
       <AddTaskModal
         open={addTaskOpen}
         onClose={() => setAddTaskOpen(false)}
-        columnOptions={
-          columnOptions.length > 0
-            ? columnOptions
-            : [{ value: "Todo", label: "Todo" }]
-        }
-        boardIndex={boardIndex}
+        columns={columns}
       />
-      {currentBoard && (
-        <>
-          <EditBoardModal
-            open={editBoardOpen}
-            onClose={() => setEditBoardOpen(false)}
-            boardName={currentBoard.name}
-            columnNames={currentBoard.columns.map((c) => c.name)}
-            boardIndex={boardIndex}
-            originalBoard={currentBoard}
-          />
-          <DeleteBoardModal
-            open={deleteBoardOpen}
-            onClose={() => setDeleteBoardOpen(false)}
-            onConfirm={() => {
-              void navigate("/", { replace: true });
-            }}
-            boardName={currentBoard.name}
-            boardIndex={boardIndex}
-          />
-        </>
+      {board && (
+        <DeleteBoardModal
+          open={deleteBoardOpen}
+          onClose={() => setDeleteBoardOpen(false)}
+          onConfirm={() => void navigate("/", { replace: true })}
+          boardName={board.name}
+          boardId={boardId}
+        />
       )}
     </div>
   );

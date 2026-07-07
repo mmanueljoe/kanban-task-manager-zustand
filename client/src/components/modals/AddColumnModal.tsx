@@ -1,27 +1,27 @@
 import { useState } from "react";
 import { Modal } from "@components/ui/Modal";
 import { Button } from "@components/ui/Button";
-import { useStore } from "@/store/useStore";
+import { useAddColumn } from "@/hooks/useColumnQueries";
 import { useUi } from "@/hooks/useUi";
 
 type AddColumnModalProps = {
   open: boolean;
   onClose: () => void;
-  boardIndex: number | null;
+  boardId: string | null;
 };
 
 export function AddColumnModal({
   open,
   onClose,
-  boardIndex,
+  boardId,
 }: AddColumnModalProps) {
-  const dispatch = useStore((state) => state.dispatch);
-  const { startLoading, stopLoading, showToast } = useUi();
+  const { showToast } = useUi();
+  const addColumn = useAddColumn(boardId ?? "");
   const [name, setName] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (boardIndex === null || !name.trim()) {
+    if (!boardId || !name.trim()) {
       showToast({
         type: "error",
         message: "Please provide a name for the new column.",
@@ -29,21 +29,15 @@ export function AddColumnModal({
       return;
     }
 
-    startLoading("addColumn");
-    try {
-      dispatch({
-        type: "ADD_COLUMN",
-        payload: {
-          boardIndex,
-          columnName: name.trim(),
-        },
-      });
-      showToast({ type: "success", message: "Column added" });
-      setName("");
-    } finally {
-      stopLoading("addColumn");
-      onClose();
-    }
+    addColumn.mutate(name.trim(), {
+      onSuccess: () => {
+        showToast({ type: "success", message: "Column added" });
+        setName("");
+        onClose();
+      },
+      onError: () =>
+        showToast({ type: "error", message: "Couldn't add the column." }),
+    });
   };
 
   return (
@@ -61,8 +55,13 @@ export function AddColumnModal({
           />
         </div>
         <div className="app-modal-actions">
-          <Button type="submit" variant="primary" size="large">
-            Create Column
+          <Button
+            type="submit"
+            variant="primary"
+            size="large"
+            disabled={addColumn.isPending}
+          >
+            {addColumn.isPending ? "Adding…" : "Create Column"}
           </Button>
         </div>
       </form>

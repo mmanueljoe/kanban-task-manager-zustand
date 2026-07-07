@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router";
-import { useBoards } from "@/hooks/useBoards";
+import { useBoards } from "@/hooks/useBoardQueries";
 import { ThemeToggle } from "@components/ui/ThemeToggle";
 import { memo } from "react";
 
@@ -14,16 +14,16 @@ type AsideProps = {
 
 const BoardLink = memo(function BoardLink({
   boardName,
-  index,
+  boardId,
   isActive,
 }: {
   boardName: string;
-  index: number;
+  boardId: string;
   isActive: boolean;
 }) {
   return (
     <Link
-      to={`/board/${index}`}
+      to={`/board/${boardId}`}
       className={`app-aside-link ${isActive ? "active" : ""}`}
     >
       <img src={iconBoard} alt="" width={16} height={16} aria-hidden />
@@ -34,7 +34,7 @@ const BoardLink = memo(function BoardLink({
 
 export function Aside({ onHideSidebar, onCreateBoard }: AsideProps) {
   const location = useLocation();
-  const { boards } = useBoards();
+  const { data: boards = [] } = useBoards();
 
   return (
     <aside className="app-aside">
@@ -49,12 +49,12 @@ export function Aside({ onHideSidebar, onCreateBoard }: AsideProps) {
       </Link>
       <p className="heading-s app-aside-title">ALL BOARDS ({boards.length})</p>
       <nav className="app-aside-nav">
-        {boards.map((board, index) => (
+        {boards.map((board) => (
           <BoardLink
-            key={board.name}
+            key={board.id}
             boardName={board.name}
-            index={index}
-            isActive={location.pathname === `/board/${index}`}
+            boardId={board.id}
+            isActive={location.pathname === `/board/${board.id}`}
           />
         ))}
         <button

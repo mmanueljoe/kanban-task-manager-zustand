@@ -14,6 +14,7 @@ export function useBoard(boardId: string) {
   return useQuery({
     queryKey: keys.board(boardId),
     queryFn: () => api.get<BoardDTO>(`/boards/${boardId}`),
+    enabled: Boolean(boardId),
   });
 }
 

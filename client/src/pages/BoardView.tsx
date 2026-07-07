@@ -1,11 +1,14 @@
+import { useState, memo } from "react";
 import { Link } from "react-router";
-import { useBoards } from "@/hooks/useBoards";
-import { useCurrentBoard } from "@/hooks/useCurrentBoard";
+import { useQueryClient } from "@tanstack/react-query";
+import type { ColumnDTO, TaskDTO } from "@kanban/shared";
 import { Button } from "@components/ui/Button";
-import type { Task } from "@/types/types";
-import { useCallback, useState, useMemo, memo } from "react";
-import { TaskDetailsModal } from "@components/modals/TaskDetailsModal";
 import { AddColumnModal } from "@components/modals/AddColumnModal";
+import { useCurrentBoard } from "@/hooks/useCurrentBoard";
+import { useColumns } from "@/hooks/useColumnQueries";
+import { useTasks, useMoveTask } from "@/hooks/useTaskQueries";
+import { keys } from "@/lib/keys";
+import { positionBetween } from "@/lib/position";
 import {
   DndContext,
   type DragEndEvent,
@@ -24,82 +27,46 @@ const COLUMN_DOT_COLORS = [
   "#2A3FDB",
 ];
 
-function encodeTaskId(
-  boardIndex: number,
-  columnName: string,
-  taskTitle: string
-) {
-  return `${boardIndex}::${columnName}::${taskTitle}`;
-}
-function decodeTaskId(
-  id: string
-): { boardIndex: number; columnName: string; taskTitle: string } | null {
-  const parts = id.split("::");
-  if (parts.length < 3) return null;
-  return {
-    boardIndex: parseInt(parts[0], 10),
-    columnName: parts[1],
-    taskTitle: parts.slice(2).join("::"),
-  };
-}
-function encodeColumnId(boardIndex: number, columnName: string) {
-  return `${boardIndex}::${columnName}`;
-}
-function decodeColumnId(
-  id: string
-): { boardIndex: number; columnName: string } | null {
-  const parts = id.split("::");
-  if (parts.length < 2) return null;
-  return { boardIndex: parseInt(parts[0], 10), columnName: parts[1] };
-}
-
 const DraggableTask = memo(function DraggableTask({
-  boardIndex,
-  columnName,
   task,
-  subtaskSummary,
-  onOpenDetails,
+  columnId,
 }: {
-  boardIndex: number;
-  columnName: string;
-  task: Task;
-  subtaskSummary: (t: Task) => string;
-  onOpenDetails: () => void;
+  task: TaskDTO;
+  columnId: string;
 }) {
-  const id = encodeTaskId(boardIndex, columnName, task.title);
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id,
+    id: task.id,
+    data: { task, columnId },
   });
+  const done = task.subtasks.filter((s) => s.isCompleted).length;
+  const total = task.subtasks.length;
   return (
     <li
       ref={setNodeRef}
       className="app-board-task"
       style={{ opacity: isDragging ? 0.5 : 1 }}
-      onClick={onOpenDetails}
       {...listeners}
       {...attributes}
     >
       <p className="app-board-task-title">{task.title}</p>
-      <p className="app-board-task-subtasks">{subtaskSummary(task)}</p>
+      <p className="app-board-task-subtasks">
+        {done} of {total} subtask{total !== 1 ? "s" : ""}
+      </p>
     </li>
   );
 });
 
+// Each column fetches its own tasks — the per-column query keys that make the
+// optimistic move touch exactly two caches.
 const DroppableColumn = memo(function DroppableColumn({
-  boardIndex,
-  columnName,
-  columnIndex,
-  taskCount,
-  children,
+  column,
+  colorIndex,
 }: {
-  boardIndex: number;
-  columnName: string;
-  columnIndex: number;
-  taskCount: number;
-  children: React.ReactNode;
+  column: ColumnDTO;
+  colorIndex: number;
 }) {
-  const id = encodeColumnId(boardIndex, columnName);
-  const { setNodeRef, isOver } = useDroppable({ id });
+  const { data: tasks = [] } = useTasks(column.id);
+  const { setNodeRef, isOver } = useDroppable({ id: column.id });
   return (
     <section
       ref={setNodeRef}
@@ -114,83 +81,61 @@ const DroppableColumn = memo(function DroppableColumn({
           className="app-board-column-dot"
           style={{
             backgroundColor:
-              COLUMN_DOT_COLORS[columnIndex % COLUMN_DOT_COLORS.length],
+              COLUMN_DOT_COLORS[colorIndex % COLUMN_DOT_COLORS.length],
           }}
         />
         <h2 className="app-board-column-title">
-          {columnName} ({taskCount})
+          {column.name} ({tasks.length})
         </h2>
       </div>
-      <ul className="app-board-tasks">{children}</ul>
+      <ul className="app-board-tasks">
+        {tasks.map((task) => (
+          <DraggableTask key={task.id} task={task} columnId={column.id} />
+        ))}
+      </ul>
     </section>
   );
 });
 
 export function BoardView() {
-  const [selectedTask, setSelectedTask] = useState<{
-    boardIndex: number | null;
-    columnName: string | null;
-    taskTitle: string | null;
-  } | null>(null);
-  const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const { boardId, board, isPending } = useCurrentBoard();
+  const columnsQuery = useColumns(boardId ?? "");
+  const move = useMoveTask();
+  const qc = useQueryClient();
   const [addColumnOpen, setAddColumnOpen] = useState(false);
-  const { dispatch } = useBoards();
-  const { board, boardIndex } = useCurrentBoard();
-
-  const subtaskSummary = useCallback((task: Task): string => {
-    const total = task.subtasks?.length ?? 0;
-    const done = task.subtasks?.filter((s) => s.isCompleted).length ?? 0;
-    return `${done} of ${total} substask${total !== 1 ? "s" : ""}`;
-  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
 
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event;
-      if (boardIndex === null || !over) return;
-      const taskData = decodeTaskId(String(active.id));
-      const columnData = decodeColumnId(String(over.id));
-      if (
-        !taskData ||
-        !columnData ||
-        taskData.boardIndex !== boardIndex ||
-        columnData.boardIndex !== boardIndex
-      )
-        return;
-      const { columnName: fromColumn, taskTitle } = taskData;
-      const toColumn = columnData.columnName;
-      if (fromColumn === toColumn) return;
-      dispatch({
-        type: "MOVE_TASK",
-        payload: { boardIndex, fromColumn, toColumn, taskTitle },
-      });
-    },
-    [boardIndex, dispatch]
-  );
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+    const data = active.data.current as
+      | { task: TaskDTO; columnId: string }
+      | undefined;
+    if (!data) return;
 
-  const taskCallbacks = useMemo(() => {
-    if (!board || !board.columns) {
-      return new Map<string, () => void>();
-    }
-    const callbacks = new Map<string, () => void>();
-    board.columns.forEach((col) => {
-      col.tasks.forEach((task) => {
-        const key = `${col.name}::${task.title}`;
-        callbacks.set(key, () => {
-          setSelectedTask({
-            boardIndex,
-            columnName: col.name,
-            taskTitle: task.title,
-          });
-          setTaskModalOpen(true);
-        });
-      });
+    const toColumnId = String(over.id);
+    if (data.columnId === toColumnId) return; // same column: no reorder yet
+
+    // Append to the end of the destination column.
+    const toTasks = qc.getQueryData<TaskDTO[]>(keys.tasks(toColumnId)) ?? [];
+    const lastPos = toTasks.length
+      ? Math.max(...toTasks.map((t) => t.position))
+      : null;
+
+    move.mutate({
+      task: data.task,
+      fromColumnId: data.columnId,
+      toColumnId,
+      position: positionBetween(lastPos, null),
     });
-    return callbacks;
-  }, [board, boardIndex]);
+  };
+
+  if (isPending || (boardId && columnsQuery.isPending)) {
+    return <div className="app-main app-main-board">Loading board…</div>;
+  }
 
   if (!board) {
     return (
@@ -206,14 +151,15 @@ export function BoardView() {
     );
   }
 
-  if (board.columns.length === 0) {
+  const columns = columnsQuery.data ?? [];
+
+  if (columns.length === 0) {
     return (
       <div className="app-main app-main-board">
         <div className="app-empty-board">
           <h2 className="heading-l">
             This board is empty. Create a new column to get started.
           </h2>
-          <p className="body-l">Create a new column to get started.</p>
           <Button
             variant="primary"
             size="large"
@@ -222,13 +168,11 @@ export function BoardView() {
             + Add New Column
           </Button>
         </div>
-        {addColumnOpen && (
-          <AddColumnModal
-            open={addColumnOpen}
-            onClose={() => setAddColumnOpen(false)}
-            boardIndex={boardIndex}
-          />
-        )}
+        <AddColumnModal
+          open={addColumnOpen}
+          onClose={() => setAddColumnOpen(false)}
+          boardId={boardId}
+        />
       </div>
     );
   }
@@ -237,29 +181,8 @@ export function BoardView() {
     <div className="app-main app-main-board">
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="app-board-columns">
-          {board.columns.map((col, colIndex) => (
-            <DroppableColumn
-              key={col.name}
-              boardIndex={boardIndex!}
-              columnName={col.name}
-              columnIndex={colIndex}
-              taskCount={col.tasks.length}
-            >
-              {col.tasks.map((task) => {
-                const callbackKey = `${col.name}::${task.title}`;
-                const onOpenDetails = taskCallbacks.get(callbackKey);
-                return (
-                  <DraggableTask
-                    key={task.title}
-                    boardIndex={boardIndex!}
-                    columnName={col.name}
-                    task={task}
-                    subtaskSummary={subtaskSummary}
-                    onOpenDetails={onOpenDetails || (() => {})}
-                  />
-                );
-              })}
-            </DroppableColumn>
+          {columns.map((col, i) => (
+            <DroppableColumn key={col.id} column={col} colorIndex={i} />
           ))}
           <button
             type="button"
@@ -272,22 +195,11 @@ export function BoardView() {
         </div>
       </DndContext>
 
-      {selectedTask && (
-        <TaskDetailsModal
-          open={taskModalOpen}
-          onClose={() => setTaskModalOpen(false)}
-          boardIndex={selectedTask.boardIndex}
-          columnName={selectedTask.columnName}
-          taskTitle={selectedTask.taskTitle}
-        />
-      )}
-      {addColumnOpen && (
-        <AddColumnModal
-          open={addColumnOpen}
-          onClose={() => setAddColumnOpen(false)}
-          boardIndex={boardIndex}
-        />
-      )}
+      <AddColumnModal
+        open={addColumnOpen}
+        onClose={() => setAddColumnOpen(false)}
+        boardId={boardId}
+      />
     </div>
   );
 }

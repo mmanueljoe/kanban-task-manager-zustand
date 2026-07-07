@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router";
 import { useRef, useState, useEffect, memo, useMemo } from "react";
-import { useBoards } from "@/hooks/useBoards";
+import { useBoards } from "@/hooks/useBoardQueries";
 import { useCurrentBoard } from "@/hooks/useCurrentBoard";
 import { useMe, useLogout } from "@hooks/useAuthQueries";
 import { ThemeToggle } from "@components/ui/ThemeToggle";
@@ -20,19 +20,19 @@ type HeaderProps = {
 
 const BoardDropdownItem = memo(function BoardDropdownItem({
   boardName,
-  index,
+  boardId,
   isActive,
   onSelect,
 }: {
   boardName: string;
-  index: number;
+  boardId: string;
   isActive: boolean;
   onSelect: () => void;
 }) {
   return (
     <li>
       <Link
-        to={`/board/${index}`}
+        to={`/board/${boardId}`}
         className={`app-board-dropdown-item ${isActive ? "active" : ""}`}
         onClick={onSelect}
       >
@@ -56,8 +56,8 @@ export function Header({
   onDeleteBoard,
   canEditBoard = false,
 }: HeaderProps) {
-  const { boards } = useBoards();
-  const { board, boardIndex } = useCurrentBoard();
+  const { data: boards = [] } = useBoards();
+  const { board, boardId } = useCurrentBoard();
   const { data: user } = useMe();
   const logout = useLogout();
   const navigate = useNavigate();
@@ -84,8 +84,8 @@ export function Header({
   }, [menuOpen, accountMenuOpen]);
 
   const currentBoardName = useMemo(
-    () => (board != null && boardIndex != null ? board.name : "Boards"),
-    [board?.name, boardIndex]
+    () => (board != null ? board.name : "Boards"),
+    [board?.name]
   );
 
   const handleLogout = () => {
@@ -157,12 +157,12 @@ export function Header({
                 ALL BOARDS ({boards.length})
               </p>
               <ul className="app-board-dropdown-list">
-                {boards.map((board, index) => (
+                {boards.map((b) => (
                   <BoardDropdownItem
-                    key={board.name}
-                    boardName={board.name}
-                    index={index}
-                    isActive={boardIndex === index}
+                    key={b.id}
+                    boardName={b.name}
+                    boardId={b.id}
+                    isActive={boardId === b.id}
                     onSelect={() => setDropdownOpen(false)}
                   />
                 ))}

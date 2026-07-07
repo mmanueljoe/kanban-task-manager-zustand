@@ -1,32 +1,22 @@
 import { useParams } from "react-router";
-import { useStore } from "@/store/useStore";
-import { useShallow } from "zustand/react/shallow";
-import type { Board } from "@/types/types";
+import type { BoardDTO } from "@kanban/shared";
+import { useBoard } from "@/hooks/useBoardQueries";
 
 type UseCurrentBoardResult = {
-  board: Board | null;
-  boardIndex: number | null;
+  boardId: string | null;
+  board: BoardDTO | null;
+  isPending: boolean;
 };
 
+// Reads the board id from the URL (/board/:boardId) and fetches that board.
+// When there's no id in the route (e.g. the dashboard) the query stays disabled.
 export function useCurrentBoard(): UseCurrentBoardResult {
   const { boardId } = useParams<{ boardId?: string }>();
+  const query = useBoard(boardId ?? "");
 
-  const index =
-    boardId != null && /^\d+$/.test(boardId) ? parseInt(boardId, 10) : null;
-
-  const board = useStore(
-    useShallow((state) => {
-      if (
-        index == null ||
-        !Number.isFinite(index) ||
-        index < 0 ||
-        index >= state.boards.length
-      ) {
-        return null;
-      }
-      return state.boards[index];
-    })
-  );
-
-  return { board, boardIndex: index };
+  return {
+    boardId: boardId ?? null,
+    board: boardId ? (query.data ?? null) : null,
+    isPending: Boolean(boardId) && query.isPending,
+  };
 }

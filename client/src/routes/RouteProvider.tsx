@@ -52,24 +52,17 @@ function AnimatedPage({ children }: { children: React.ReactNode }) {
 export function RouteProvider() {
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<Dashboard />} />
-        <Route
-          path="board/:boardId"
-          element={
-            <ProtectedRoute>
-              <BoardView />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="admin"
-          element={
-            <ProtectedRoute>
-              <Admin />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="board/:boardId" element={<BoardView />} />
+        <Route path="admin" element={<Admin />} />
       </Route>
       <Route
         path="/login"

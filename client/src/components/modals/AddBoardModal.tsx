@@ -3,9 +3,9 @@ import { useNavigate } from "react-router";
 import { Modal } from "@components/ui/Modal";
 import { Button } from "@components/ui/Button";
 import iconCross from "@assets/icon-cross.svg";
-import { useBoards } from "@/hooks/useBoards";
+import { useCreateBoard } from "@/hooks/useBoardQueries";
+import { api } from "@/lib/api";
 import { useUi } from "@/hooks/useUi";
-import type { Board } from "@/types/types";
 
 type AddBoardModalProps = {
   open: boolean;
@@ -13,70 +13,50 @@ type AddBoardModalProps = {
 };
 
 export function AddBoardModal({ open, onClose }: AddBoardModalProps) {
-  const { boards, dispatch } = useBoards();
-  const { startLoading, stopLoading, showToast } = useUi();
+  const { showToast } = useUi();
+  const createBoard = useCreateBoard();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [columns, setColumns] = useState<string[]>(["Todo", "Doing"]);
+  const [submitting, setSubmitting] = useState(false);
 
   const addColumn = () => setColumns((c) => [...c, ""]);
   const removeColumn = (i: number) =>
     setColumns((c) => c.filter((_, idx) => idx !== i));
   const updateColumn = (i: number, v: string) =>
-    setColumns((c) => {
-      const next = [...c];
-      next[i] = v;
-      return next;
-    });
+    setColumns((c) => c.map((col, idx) => (idx === i ? v : col)));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const reset = () => {
+    setName("");
+    setColumns(["Todo", "Doing"]);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const trimmedName = name.trim();
     if (!trimmedName) {
-      showToast({
-        type: "error",
-        message: "Please provide a name for the board.",
-      });
+      showToast({ type: "error", message: "Please provide a board name." });
       return;
     }
+    const cleanedColumns = columns.map((c) => c.trim()).filter(Boolean);
 
-    const cleanedColumns = columns
-      .map((c) => c.trim())
-      .filter((c) => c.length > 0);
-
-    if (cleanedColumns.length === 0) {
-      showToast({
-        type: "error",
-        message: "Please add at least one column for the new board.",
-      });
-      return;
-    }
-
-    const newBoardIndex = boards.length;
-
-    const newBoard: Board = {
-      name: trimmedName,
-      columns: cleanedColumns.map((colName) => ({
-        name: colName,
-        tasks: [],
-      })),
-    };
-
-    startLoading("addBoard");
+    setSubmitting(true);
     try {
-      dispatch({
-        type: "ADD_BOARD",
-        payload: newBoard,
-      });
+      const board = await createBoard.mutateAsync(trimmedName);
+      // Board is created first; its columns are separate resources, appended in
+      // order. (position is assigned server-side.)
+      for (const columnName of cleanedColumns) {
+        await api.post(`/boards/${board.id}/columns`, { name: columnName });
+      }
       showToast({ type: "success", message: "Board created" });
-      void navigate(`/board/${newBoardIndex}`);
-    } finally {
-      stopLoading("addBoard");
+      reset();
       onClose();
-      setName("");
-      setColumns(["Todo", "Doing"]);
+      void navigate(`/board/${board.id}`);
+    } catch {
+      showToast({ type: "error", message: "Couldn't create the board." });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -127,8 +107,13 @@ export function AddBoardModal({ open, onClose }: AddBoardModalProps) {
           </Button>
         </div>
         <div className="app-modal-actions">
-          <Button type="submit" variant="primary" size="large">
-            Create Board
+          <Button
+            type="submit"
+            variant="primary"
+            size="large"
+            disabled={submitting}
+          >
+            {submitting ? "Creating…" : "Create Board"}
           </Button>
         </div>
       </form>

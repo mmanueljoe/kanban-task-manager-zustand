@@ -1,6 +1,6 @@
 import { Modal } from "@components/ui/Modal";
 import { Button } from "@components/ui/Button";
-import { useStore } from "@/store/useStore";
+import { useDeleteBoard } from "@/hooks/useBoardQueries";
 import { useUi } from "@/hooks/useUi";
 
 type DeleteBoardModalProps = {
@@ -8,7 +8,7 @@ type DeleteBoardModalProps = {
   onClose: () => void;
   onConfirm: () => void;
   boardName: string;
-  boardIndex: number | null;
+  boardId: string | null;
 };
 
 export function DeleteBoardModal({
@@ -16,28 +16,26 @@ export function DeleteBoardModal({
   onClose,
   onConfirm,
   boardName,
-  boardIndex,
+  boardId,
 }: DeleteBoardModalProps) {
-  const dispatch = useStore((state) => state.dispatch);
-  const { startLoading, stopLoading, showToast } = useUi();
+  const { showToast } = useUi();
+  const deleteBoard = useDeleteBoard();
+
   const handleConfirm = () => {
-    if (boardIndex == null) {
-      showToast({
-        type: "error",
-        message: "Could not delete board. Please try again.",
-      });
+    if (!boardId) {
+      showToast({ type: "error", message: "Could not delete board." });
       onClose();
       return;
     }
-    startLoading("deleteBoard");
-    try {
-      dispatch({ type: "DELETE_BOARD", payload: { boardIndex } });
-      onConfirm();
-      showToast({ type: "success", message: "Board deleted" });
-    } finally {
-      stopLoading("deleteBoard");
-      onClose();
-    }
+    deleteBoard.mutate(boardId, {
+      onSuccess: () => {
+        showToast({ type: "success", message: "Board deleted" });
+        onClose();
+        onConfirm();
+      },
+      onError: () =>
+        showToast({ type: "error", message: "Couldn't delete the board." }),
+    });
   };
 
   return (
@@ -55,6 +53,7 @@ export function DeleteBoardModal({
           variant="destructive"
           size="large"
           onClick={handleConfirm}
+          disabled={deleteBoard.isPending}
         >
           Delete
         </Button>
