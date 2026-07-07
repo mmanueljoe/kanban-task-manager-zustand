@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Task, type Subtask } from "../src/domain/Task.js";
+import { Task, type Subtask } from "@/domain/Task.js";
 
 const validParams = {
   id: "task-1",

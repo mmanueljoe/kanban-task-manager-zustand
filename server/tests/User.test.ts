@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { User } from "../src/domain/User.js";
+import { User } from "@/domain/User.js";
 
 const validParams = {
   id: "user-1",

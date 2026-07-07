@@ -14,7 +14,7 @@ export class Board {
   private _collaboratorList: Collaborator[];
 
   constructor(params: {
-    boardId: string;
+    id: string;
     ownerId: string;
     name: string;
     collaborators: Collaborator[];
@@ -22,7 +22,7 @@ export class Board {
     if (!params.name.trim()) throw new Error("Board name can't be empty");
     if (!params.ownerId.trim()) throw new Error("An owner id is required");
 
-    this._id = params.boardId;
+    this._id = params.id;
     this._ownerId = params.ownerId;
     this._name = params.name;
     this._collaboratorList = params.collaborators ?? [];

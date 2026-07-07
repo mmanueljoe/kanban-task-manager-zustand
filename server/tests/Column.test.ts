@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Column } from "../src/domain/Column.js";
+import { Column } from "@/domain/Column.js";
 
 const validParams = {
   id: "col-1",

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Board, type Collaborator } from "../src/domain/Board.js";
+import { Board, type Collaborator } from "@/domain/Board.js";
 
 const OWNER = "owner-1";
 const EDITOR = "editor-1";
@@ -9,7 +9,7 @@ const STRANGER = "stranger-1";
 // Builds a board owned by OWNER. Pass collaborators per test; default to none.
 function makeBoard(collaborators: Collaborator[] = []) {
   return new Board({
-    boardId: "board-1",
+    id: "board-1",
     ownerId: OWNER,
     name: "Roadmap",
     collaborators,
@@ -40,7 +40,7 @@ describe("Board", () => {
       expect(
         () =>
           new Board({
-            boardId: "b",
+            id: "b",
             ownerId: OWNER,
             name: "",
             collaborators: [],
@@ -52,7 +52,7 @@ describe("Board", () => {
       expect(
         () =>
           new Board({
-            boardId: "b",
+            id: "b",
             ownerId: OWNER,
             name: "   ",
             collaborators: [],
@@ -64,7 +64,7 @@ describe("Board", () => {
       expect(
         () =>
           new Board({
-            boardId: "b",
+            id: "b",
             ownerId: "  ",
             name: "Roadmap",
             collaborators: [],
