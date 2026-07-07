@@ -17,23 +17,26 @@ function Toast({ toast, onDismiss }: ToastProps) {
     return () => window.clearTimeout(timer);
   }, [onDismiss, toast.id]);
 
+  // Solid, unambiguous colors so a toast reads as feedback regardless of theme.
   const background =
     toast.type === "success"
-      ? "var(--toast-success-bg, var(--bg-main))"
+      ? "#21c17a"
       : toast.type === "error"
-        ? "var(--toast-error-bg, var(--bg-main))"
-        : "var(--toast-info-bg, var(--bg-main))";
-
-  const color =
-    toast.type === "error" ? "var(--destructive)" : "var(--text-primary)";
+        ? "#ea5555"
+        : "#635fc7";
 
   return (
-    <div className="app-toast" style={{ background, color }}>
+    <div
+      className="app-toast"
+      role="status"
+      style={{ background, color: "#ffffff", borderColor: "transparent" }}
+    >
       <span className="body-m app-toast-message">{toast.message}</span>
       <button
         type="button"
         className="app-toast-dismiss"
         aria-label="Dismiss notification"
+        style={{ color: "#ffffff" }}
         onClick={() => onDismiss(toast.id)}
       >
         ×

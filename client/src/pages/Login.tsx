@@ -27,7 +27,7 @@ export function Login() {
   };
 
   return (
-    <div className="app-main">
+    <div className="app-login">
       <h1 className="heading-xl app-section-title">Log in</h1>
       <form onSubmit={handleSubmit} className="app-stack-4 app-login-form">
         <Input

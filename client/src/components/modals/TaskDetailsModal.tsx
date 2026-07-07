@@ -1,43 +1,38 @@
-import { useStore } from "@/store/useStore";
-import { useShallow } from "zustand/react/shallow";
-import { useUi } from "@/hooks/useUi";
-import type { TaskDetailsModalProps } from "@/types/types";
+import { useState, useRef, useEffect } from "react";
 import { Modal } from "../ui/Modal";
 import { Checkbox } from "../ui/Checkbox";
-import { useState, useRef, useEffect, useMemo } from "react";
+import {
+  useTasks,
+  useToggleSubtask,
+  useDeleteTask,
+} from "@/hooks/useTaskQueries";
+import { useUi } from "@/hooks/useUi";
 import iconEllipsis from "@assets/icon-vertical-ellipsis.svg";
+
+type TaskDetailsModalProps = {
+  open: boolean;
+  onClose: () => void;
+  taskId: string | null;
+  columnId: string | null;
+  columnName: string | null;
+};
 
 export function TaskDetailsModal({
   open,
   onClose,
-  boardIndex,
+  taskId,
+  columnId,
   columnName,
-  taskTitle,
 }: TaskDetailsModalProps) {
-  const board = useStore(
-    useShallow((state) => {
-      if (
-        boardIndex === null ||
-        boardIndex < 0 ||
-        boardIndex >= state.boards.length
-      ) {
-        return null;
-      }
-      return state.boards[boardIndex];
-    })
-  );
-
-  const dispatch = useStore((state) => state.dispatch);
-  const { startLoading, stopLoading, showToast } = useUi();
+  // Read the task live from the column's cache so a subtask toggle (which
+  // refetches that column) is reflected here immediately.
+  const { data: tasks = [] } = useTasks(columnId ?? "");
+  const toggleSubtask = useToggleSubtask(columnId ?? "");
+  const deleteTask = useDeleteTask(columnId ?? "");
+  const { showToast } = useUi();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  const { task } = useMemo(() => {
-    const col = board?.columns.find((c) => c.name === columnName);
-    const t = col?.tasks.find((t) => t.title === taskTitle);
-    return { column: col, task: t };
-  }, [board, columnName, taskTitle]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -50,41 +45,22 @@ export function TaskDetailsModal({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [menuOpen]);
 
-  if (!task || boardIndex === null || !columnName || !taskTitle) return null;
+  const task = tasks.find((t) => t.id === taskId);
+  if (!task) return null;
 
-  const completedSubtasks =
-    task.subtasks?.filter((s) => s.isCompleted).length ?? 0;
-  const totalSubtasks = task.subtasks?.length ?? 0;
+  const completed = task.subtasks.filter((s) => s.isCompleted).length;
+  const total = task.subtasks.length;
 
-  const handleSubtaskToggle = (subtaskTitle: string) => {
-    dispatch({
-      type: "TOOGLE_SUBTASK",
-      payload: {
-        boardIndex,
-        columnName,
-        taskTitle,
-        subtaskTitle,
+  const handleDelete = () => {
+    deleteTask.mutate(task.id, {
+      onSuccess: () => {
+        showToast({ type: "success", message: "Task deleted" });
+        setMenuOpen(false);
+        onClose();
       },
+      onError: () =>
+        showToast({ type: "error", message: "Couldn't delete the task." }),
     });
-  };
-
-  const handleDeleteTask = () => {
-    startLoading("deleteTask");
-    try {
-      dispatch({
-        type: "DELETE_TASK",
-        payload: {
-          boardIndex,
-          columnName,
-          taskTitle,
-        },
-      });
-      showToast({ type: "success", message: "Task deleted" });
-    } finally {
-      stopLoading("deleteTask");
-      setMenuOpen(false);
-      onClose();
-    }
   };
 
   return (
@@ -107,19 +83,8 @@ export function TaskDetailsModal({
               <button
                 type="button"
                 role="menuitem"
-                className="dropdown-option app-menu-item"
-                onClick={() => {
-                  setMenuOpen(false);
-                  // TODO: Open EditTaskModal
-                }}
-              >
-                Edit Task
-              </button>
-              <button
-                type="button"
-                role="menuitem"
                 className="dropdown-option app-menu-item app-menu-item--danger"
-                onClick={handleDeleteTask}
+                onClick={handleDelete}
               >
                 Delete Task
               </button>
@@ -132,18 +97,23 @@ export function TaskDetailsModal({
         <p className="body-l app-modal-description">{task.description}</p>
       )}
 
-      {task.subtasks && task.subtasks.length > 0 && (
+      {total > 0 && (
         <div className="app-modal-section">
           <label className="input-label app-modal-subtasks-label">
-            Subtasks ({completedSubtasks} of {totalSubtasks})
+            Subtasks ({completed} of {total})
           </label>
           <div className="app-modal-subtasks-list">
             {task.subtasks.map((subtask) => (
               <Checkbox
-                key={subtask.title}
+                key={subtask.id}
                 label={subtask.title}
                 checked={subtask.isCompleted}
-                onCheckedChange={() => handleSubtaskToggle(subtask.title)}
+                onCheckedChange={() =>
+                  toggleSubtask.mutate({
+                    taskId: task.id,
+                    subtaskId: subtask.id,
+                  })
+                }
               />
             ))}
           </div>
@@ -152,9 +122,7 @@ export function TaskDetailsModal({
 
       <div className="input-wrap">
         <label className="input-label">Current Status</label>
-        <div className="input app-modal-status-display">
-          {task.status || columnName}
-        </div>
+        <div className="input app-modal-status-display">{columnName ?? ""}</div>
       </div>
     </Modal>
   );

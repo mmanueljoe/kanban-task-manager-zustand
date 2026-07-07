@@ -487,9 +487,22 @@
     min-height: 100vh;
   }
 
-  /* Login form width */
+  /* Login page — centered card */
+  .app-login {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 24px;
+  }
   .app-login-form {
+    width: 100%;
     max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
   /* Loading overlay */

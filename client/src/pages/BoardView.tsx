@@ -1,12 +1,14 @@
-import { useState, memo } from "react";
+import { useState, useCallback, memo } from "react";
 import { Link } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDTO, TaskDTO } from "@kanban/shared";
 import { Button } from "@components/ui/Button";
 import { AddColumnModal } from "@components/modals/AddColumnModal";
+import { TaskDetailsModal } from "@components/modals/TaskDetailsModal";
 import { useCurrentBoard } from "@/hooks/useCurrentBoard";
 import { useColumns } from "@/hooks/useColumnQueries";
 import { useTasks, useMoveTask } from "@/hooks/useTaskQueries";
+import { useUi } from "@/hooks/useUi";
 import { keys } from "@/lib/keys";
 import { positionBetween } from "@/lib/position";
 import {
@@ -30,9 +32,11 @@ const COLUMN_DOT_COLORS = [
 const DraggableTask = memo(function DraggableTask({
   task,
   columnId,
+  onOpen,
 }: {
   task: TaskDTO;
   columnId: string;
+  onOpen: () => void;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: task.id,
@@ -45,6 +49,7 @@ const DraggableTask = memo(function DraggableTask({
       ref={setNodeRef}
       className="app-board-task"
       style={{ opacity: isDragging ? 0.5 : 1 }}
+      onClick={onOpen}
       {...listeners}
       {...attributes}
     >
@@ -61,9 +66,11 @@ const DraggableTask = memo(function DraggableTask({
 const DroppableColumn = memo(function DroppableColumn({
   column,
   colorIndex,
+  onOpenTask,
 }: {
   column: ColumnDTO;
   colorIndex: number;
+  onOpenTask: (task: TaskDTO, columnId: string, columnName: string) => void;
 }) {
   const { data: tasks = [] } = useTasks(column.id);
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
@@ -90,7 +97,12 @@ const DroppableColumn = memo(function DroppableColumn({
       </div>
       <ul className="app-board-tasks">
         {tasks.map((task) => (
-          <DraggableTask key={task.id} task={task} columnId={column.id} />
+          <DraggableTask
+            key={task.id}
+            task={task}
+            columnId={column.id}
+            onOpen={() => onOpenTask(task, column.id, column.name)}
+          />
         ))}
       </ul>
     </section>
@@ -102,7 +114,19 @@ export function BoardView() {
   const columnsQuery = useColumns(boardId ?? "");
   const move = useMoveTask();
   const qc = useQueryClient();
+  const { showToast } = useUi();
   const [addColumnOpen, setAddColumnOpen] = useState(false);
+  const [selected, setSelected] = useState<{
+    taskId: string;
+    columnId: string;
+    columnName: string;
+  } | null>(null);
+
+  const openTask = useCallback(
+    (task: TaskDTO, columnId: string, columnName: string) =>
+      setSelected({ taskId: task.id, columnId, columnName }),
+    []
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -125,12 +149,18 @@ export function BoardView() {
       ? Math.max(...toTasks.map((t) => t.position))
       : null;
 
-    move.mutate({
-      task: data.task,
-      fromColumnId: data.columnId,
-      toColumnId,
-      position: positionBetween(lastPos, null),
-    });
+    move.mutate(
+      {
+        task: data.task,
+        fromColumnId: data.columnId,
+        toColumnId,
+        position: positionBetween(lastPos, null),
+      },
+      {
+        onError: () =>
+          showToast({ type: "error", message: "Couldn't move the task." }),
+      }
+    );
   };
 
   if (isPending || (boardId && columnsQuery.isPending)) {
@@ -182,7 +212,12 @@ export function BoardView() {
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="app-board-columns">
           {columns.map((col, i) => (
-            <DroppableColumn key={col.id} column={col} colorIndex={i} />
+            <DroppableColumn
+              key={col.id}
+              column={col}
+              colorIndex={i}
+              onOpenTask={openTask}
+            />
           ))}
           <button
             type="button"
@@ -200,6 +235,16 @@ export function BoardView() {
         onClose={() => setAddColumnOpen(false)}
         boardId={boardId}
       />
+
+      {selected && (
+        <TaskDetailsModal
+          open
+          onClose={() => setSelected(null)}
+          taskId={selected.taskId}
+          columnId={selected.columnId}
+          columnName={selected.columnName}
+        />
+      )}
     </div>
   );
 }
