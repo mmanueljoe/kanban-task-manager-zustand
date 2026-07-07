@@ -1,7 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { Board, type CollaboratorRole } from "@/domain/Board.js";
 import { BoardRepository } from "@/repositories/BoardRepository.js";
-import { NotAuthorizedError, NotFoundError } from "@/errors/AppError.js";
+import {
+  ConflictError,
+  NotAuthorizedError,
+  NotFoundError,
+  ValidationError,
+} from "@/errors/AppError.js";
 
 export class BoardService {
   constructor(
@@ -47,9 +52,7 @@ export class BoardService {
 
   async deleteBoard(userId: string, boardId: string): Promise<void> {
     const board = await this.requireBoard(boardId);
-    if (board.getAccessLevel(userId) !== "OWNER") {
-      throw new NotAuthorizedError("Only the owner can delete this board");
-    }
+    this.requireOwner(board, userId, "delete this board");
     await this.boards.delete(boardId);
   }
 
@@ -60,7 +63,15 @@ export class BoardService {
     role: CollaboratorRole
   ): Promise<void> {
     const board = await this.requireBoard(boardId);
-    // The entity enforces the rules (owner-only, not the owner, no duplicate).
+    this.requireOwner(board, actingUserId, "invite collaborators");
+    if (collaboratorUserId === board.ownerId) {
+      throw new ValidationError("The owner cannot be added as a collaborator");
+    }
+    if (board.collaborators.some((c) => c.userId === collaboratorUserId)) {
+      throw new ConflictError("That user is already a collaborator");
+    }
+    // Entity re-validates as defense-in-depth; our checks above give the right
+    // HTTP status first.
     board.addCollaborator(actingUserId, { userId: collaboratorUserId, role });
     await this.boards.addCollaborator(boardId, {
       userId: collaboratorUserId,
@@ -75,6 +86,8 @@ export class BoardService {
     role: CollaboratorRole
   ): Promise<void> {
     const board = await this.requireBoard(boardId);
+    this.requireOwner(board, actingUserId, "change collaborator roles");
+    this.requireCollaborator(board, collaboratorUserId);
     board.changeCollaboratorRole(actingUserId, collaboratorUserId, role);
     await this.boards.updateCollaboratorRole(boardId, collaboratorUserId, role);
   }
@@ -85,6 +98,8 @@ export class BoardService {
     collaboratorUserId: string
   ): Promise<void> {
     const board = await this.requireBoard(boardId);
+    this.requireOwner(board, actingUserId, "remove collaborators");
+    this.requireCollaborator(board, collaboratorUserId);
     board.removeCollaborator(actingUserId, collaboratorUserId);
     await this.boards.removeCollaborator(boardId, collaboratorUserId);
   }
@@ -95,6 +110,7 @@ export class BoardService {
     newOwnerId: string
   ): Promise<void> {
     const board = await this.requireBoard(boardId);
+    this.requireOwner(board, actingUserId, "transfer ownership");
     board.changeOwner(actingUserId, newOwnerId);
     await this.boards.update(board);
   }
@@ -105,5 +121,21 @@ export class BoardService {
       throw new NotFoundError("Board not found");
     }
     return board;
+  }
+
+  private requireOwner(
+    board: Board,
+    actingUserId: string,
+    action: string
+  ): void {
+    if (board.getAccessLevel(actingUserId) !== "OWNER") {
+      throw new NotAuthorizedError(`Only the owner can ${action}`);
+    }
+  }
+
+  private requireCollaborator(board: Board, userId: string): void {
+    if (!board.collaborators.some((c) => c.userId === userId)) {
+      throw new NotFoundError("Collaborator not found");
+    }
   }
 }
