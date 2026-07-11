@@ -4,12 +4,19 @@ import { useStore } from "@/store/useStore";
 
 const AUTO_DISMISS_MS = 4000;
 
+// Solid, unambiguous colors so a toast reads as feedback regardless of theme.
+const TOAST_BG: Record<UiToast["type"], string> = {
+  success: "#21c17a",
+  error: "#ea5555",
+  info: "#635fc7",
+};
+
 type ToastProps = {
   toast: UiToast;
   onDismiss: (id: string) => void;
 };
 
-function Toast({ toast, onDismiss }: ToastProps) {
+function Toast({ toast, onDismiss }: Readonly<ToastProps>) {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       onDismiss(toast.id);
@@ -17,19 +24,14 @@ function Toast({ toast, onDismiss }: ToastProps) {
     return () => window.clearTimeout(timer);
   }, [onDismiss, toast.id]);
 
-  // Solid, unambiguous colors so a toast reads as feedback regardless of theme.
-  const background =
-    toast.type === "success"
-      ? "#21c17a"
-      : toast.type === "error"
-        ? "#ea5555"
-        : "#635fc7";
-
   return (
-    <div
+    <output
       className="app-toast"
-      role="status"
-      style={{ background, color: "#ffffff", borderColor: "transparent" }}
+      style={{
+        background: TOAST_BG[toast.type],
+        color: "#ffffff",
+        borderColor: "transparent",
+      }}
     >
       <span className="body-m app-toast-message">{toast.message}</span>
       <button
@@ -41,7 +43,7 @@ function Toast({ toast, onDismiss }: ToastProps) {
       >
         ×
       </button>
-    </div>
+    </output>
   );
 }
 

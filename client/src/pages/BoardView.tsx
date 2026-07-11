@@ -53,12 +53,14 @@ const SortableTask = memo(function SortableTask({
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
   } = useSortable({ id: task.id, data: { type: "task", columnId } });
   const done = task.subtasks.filter((s) => s.isCompleted).length;
   const total = task.subtasks.length;
+
   return (
     <li
       ref={setNodeRef}
@@ -68,14 +70,23 @@ const SortableTask = memo(function SortableTask({
         transition,
         opacity: isDragging ? 0.5 : 1,
       }}
-      onClick={onOpen}
-      {...listeners}
-      {...attributes}
     >
-      <p className="app-board-task-title">{task.title}</p>
-      <p className="app-board-task-subtasks">
-        {done} of {total} subtask{total !== 1 ? "s" : ""}
-      </p>
+      <button type="button" className="app-board-task-open" onClick={onOpen}>
+        <span className="app-board-task-title">{task.title}</span>
+        <span className="app-board-task-subtasks">
+          {done} of {total} subtask{total !== 1 ? "s" : ""}
+        </span>
+      </button>
+      <button
+        type="button"
+        ref={setActivatorNodeRef}
+        className="app-board-task-handle"
+        aria-label={`Drag ${task.title}`}
+        {...attributes}
+        {...listeners}
+      >
+        <span aria-hidden="true">⠿</span>
+      </button>
     </li>
   );
 });
@@ -157,6 +168,12 @@ export function BoardView() {
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
+      // Space lifts/drops a card; Enter is left free to open task details.
+      keyboardCodes: {
+        start: ["Space"],
+        cancel: ["Escape"],
+        end: ["Space"],
+      },
     })
   );
 

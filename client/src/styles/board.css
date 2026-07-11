@@ -103,16 +103,47 @@
     gap: 12px;
   }
   .app-board-task {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
     padding: 16px;
     border-radius: 8px;
     background-color: var(--bg-main);
     color: var(--text-primary);
     box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
-    cursor: pointer;
     transition: box-shadow 0.15s;
   }
   .app-board-task:hover {
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  }
+  /* The card body — a full-width, unstyled button that opens task details. */
+  .app-board-task-open {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+  }
+  .app-board-task-handle {
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    color: var(--text-muted);
+    cursor: grab;
+    line-height: 1;
+    align-self: center;
+    touch-action: none;
+  }
+  .app-board-task-handle:active {
+    cursor: grabbing;
   }
   .app-board-task-title {
     font-family: "Plus Jakarta Sans", sans-serif;
@@ -120,7 +151,7 @@
     font-size: 15px;
     line-height: 19px;
     color: var(--text-primary);
-    margin: 0 0 4px 0;
+    margin: 0;
   }
   .app-board-task-subtasks {
     font-family: "Plus Jakarta Sans", sans-serif;

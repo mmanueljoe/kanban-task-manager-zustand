@@ -22,16 +22,9 @@ export default defineConfig([
       {
         plugins: { prettier },
         rules: {
-          "prettier/prettier": [
-            "warn",
-            {
-              singleQuote: true,
-              trailingComma: "es5",
-              printWidth: 80,
-              semi: true,
-              endOfLine: "lf",
-            },
-          ],
+          // No inline options — defer to .prettierrc so ESLint and Prettier
+          // enforce exactly one config (double quotes, etc.).
+          "prettier/prettier": "warn",
           "react/react-in-jsx-scope": "off",
         },
       },
