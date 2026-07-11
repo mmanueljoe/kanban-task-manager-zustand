@@ -8,7 +8,7 @@ import { DeleteBoardModal } from "@components/modals/DeleteBoardModal";
 import { EditBoardModal } from "@components/modals/EditBoardModal";
 import { AddBoardModal } from "@components/modals/AddBoardModal";
 import { useCurrentBoard } from "@/hooks/useCurrentBoard";
-import { useColumns } from "@/hooks/useColumnQueries";
+import { useBoardContents } from "@/hooks/useBoardQueries";
 import iconShowSidebar from "@assets/icon-show-sidebar.svg";
 
 const pageVariants = {
@@ -44,7 +44,8 @@ function AnimatedOutlet() {
 
 export function Layout() {
   const { board, boardId } = useCurrentBoard();
-  const { data: columns = [] } = useColumns(boardId ?? "");
+  const contents = useBoardContents(boardId ?? "");
+  const columns = contents.data?.columns ?? [];
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [addBoardOpen, setAddBoardOpen] = useState(false);
   const [editBoardOpen, setEditBoardOpen] = useState(false);

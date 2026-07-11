@@ -7,19 +7,30 @@ import { AddColumnModal } from "@components/modals/AddColumnModal";
 import { TaskDetailsModal } from "@components/modals/TaskDetailsModal";
 import { useCurrentBoard } from "@/hooks/useCurrentBoard";
 import { useBoardContents } from "@/hooks/useBoardQueries";
-import { useTasks, useMoveTask } from "@/hooks/useTaskQueries";
-import { useUi } from "@/hooks/useUi";
+import { useTasks } from "@/hooks/useTaskQueries";
+import { api } from "@/lib/api";
 import { keys } from "@/lib/keys";
 import { positionBetween } from "@/lib/position";
+import { useUi } from "@/hooks/useUi";
 import {
   DndContext,
   type DragEndEvent,
-  useDraggable,
-  useDroppable,
+  type DragOverEvent,
   PointerSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
+  useDroppable,
+  closestCorners,
 } from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const COLUMN_DOT_COLORS = [
   "#49C4E5",
@@ -29,7 +40,7 @@ const COLUMN_DOT_COLORS = [
   "#2A3FDB",
 ];
 
-const DraggableTask = memo(function DraggableTask({
+const SortableTask = memo(function SortableTask({
   task,
   columnId,
   onOpen,
@@ -38,17 +49,25 @@ const DraggableTask = memo(function DraggableTask({
   columnId: string;
   onOpen: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: task.id,
-    data: { task, columnId },
-  });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id, data: { type: "task", columnId } });
   const done = task.subtasks.filter((s) => s.isCompleted).length;
   const total = task.subtasks.length;
   return (
     <li
       ref={setNodeRef}
       className="app-board-task"
-      style={{ opacity: isDragging ? 0.5 : 1 }}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+      }}
       onClick={onOpen}
       {...listeners}
       {...attributes}
@@ -61,8 +80,6 @@ const DraggableTask = memo(function DraggableTask({
   );
 });
 
-// Each column fetches its own tasks — the per-column query keys that make the
-// optimistic move touch exactly two caches.
 const DroppableColumn = memo(function DroppableColumn({
   column,
   colorIndex,
@@ -73,10 +90,14 @@ const DroppableColumn = memo(function DroppableColumn({
   onOpenTask: (task: TaskDTO, columnId: string, columnName: string) => void;
 }) {
   const { data: tasks = [] } = useTasks(column.id);
-  const { setNodeRef, isOver } = useDroppable({ id: column.id });
+  // The task list is the drop target — id is the column, so an empty column
+  // still accepts drops.
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+    data: { type: "column", columnId: column.id },
+  });
   return (
     <section
-      ref={setNodeRef}
       className="app-board-column"
       style={{
         outline: isOver ? "2px dashed var(--accent, #635FC7)" : undefined,
@@ -95,16 +116,21 @@ const DroppableColumn = memo(function DroppableColumn({
           {column.name} ({tasks.length})
         </h2>
       </div>
-      <ul className="app-board-tasks">
-        {tasks.map((task) => (
-          <DraggableTask
-            key={task.id}
-            task={task}
-            columnId={column.id}
-            onOpen={() => onOpenTask(task, column.id, column.name)}
-          />
-        ))}
-      </ul>
+      <SortableContext
+        items={tasks.map((t) => t.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <ul ref={setNodeRef} className="app-board-tasks">
+          {tasks.map((task) => (
+            <SortableTask
+              key={task.id}
+              task={task}
+              columnId={column.id}
+              onOpen={() => onOpenTask(task, column.id, column.name)}
+            />
+          ))}
+        </ul>
+      </SortableContext>
     </section>
   );
 });
@@ -112,7 +138,6 @@ const DroppableColumn = memo(function DroppableColumn({
 export function BoardView() {
   const { boardId, board, isPending } = useCurrentBoard();
   const contents = useBoardContents(boardId ?? "");
-  const move = useMoveTask();
   const qc = useQueryClient();
   const { showToast } = useUi();
   const [addColumnOpen, setAddColumnOpen] = useState(false);
@@ -129,38 +154,88 @@ export function BoardView() {
   );
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
   );
+
+  const getList = (columnId: string) =>
+    qc.getQueryData<TaskDTO[]>(keys.tasks(columnId)) ?? [];
+  const columnOf = (over: DragOverEvent["over"]) =>
+    (over?.data.current?.columnId as string | undefined) ??
+    (over?.id as string | undefined);
+
+  // Live cross-column preview: as a card is dragged over another column, move it
+  // between the per-column caches so it visually enters that column.
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+    const fromCol = active.data.current?.columnId as string | undefined;
+    const toCol = columnOf(over);
+    if (!fromCol || !toCol || fromCol === toCol) return;
+
+    const fromList = getList(fromCol);
+    const moved = fromList.find((t) => t.id === active.id);
+    if (!moved) return;
+
+    qc.setQueryData<TaskDTO[]>(
+      keys.tasks(fromCol),
+      fromList.filter((t) => t.id !== active.id)
+    );
+    const toList = getList(toCol);
+    const overIndex =
+      over.data.current?.type === "task"
+        ? toList.findIndex((t) => t.id === over.id)
+        : toList.length;
+    const next = [...toList];
+    next.splice(overIndex < 0 ? next.length : overIndex, 0, {
+      ...moved,
+      columnId: toCol,
+    });
+    qc.setQueryData(keys.tasks(toCol), next);
+    // Remember the new column so subsequent events resolve correctly.
+    if (active.data.current) active.data.current.columnId = toCol;
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
-    const data = active.data.current as
-      | { task: TaskDTO; columnId: string }
-      | undefined;
-    if (!data) return;
+    const fromCol = active.data.current?.columnId as string | undefined;
+    const toCol = columnOf(over) ?? fromCol;
+    if (!fromCol || !toCol) return;
 
-    const toColumnId = String(over.id);
-    if (data.columnId === toColumnId) return; // same column: no reorder yet
+    const list = getList(toCol);
+    const oldIndex = list.findIndex((t) => t.id === active.id);
+    if (oldIndex === -1) return;
+    let newIndex =
+      over.data.current?.type === "task"
+        ? list.findIndex((t) => t.id === over.id)
+        : list.length - 1;
+    if (newIndex === -1) newIndex = list.length - 1;
 
-    // Append to the end of the destination column.
-    const toTasks = qc.getQueryData<TaskDTO[]>(keys.tasks(toColumnId)) ?? [];
-    const lastPos = toTasks.length
-      ? Math.max(...toTasks.map((t) => t.position))
-      : null;
+    const reordered = arrayMove(list, oldIndex, newIndex);
+    qc.setQueryData(keys.tasks(toCol), reordered);
 
-    move.mutate(
-      {
-        task: data.task,
-        fromColumnId: data.columnId,
-        toColumnId,
-        position: positionBetween(lastPos, null),
-      },
-      {
-        onError: () =>
-          showToast({ type: "error", message: "Couldn't move the task." }),
-      }
-    );
+    const idx = reordered.findIndex((t) => t.id === active.id);
+    const before = idx > 0 ? reordered[idx - 1].position : null;
+    const after =
+      idx < reordered.length - 1 ? reordered[idx + 1].position : null;
+    const position = positionBetween(before, after);
+
+    api
+      .patch(`/tasks/${active.id}/move`, { toColumnId: toCol, position })
+      .then(() => {
+        void qc.invalidateQueries({ queryKey: keys.tasks(toCol) });
+        if (fromCol !== toCol) {
+          void qc.invalidateQueries({ queryKey: keys.tasks(fromCol) });
+        }
+      })
+      .catch(() => {
+        showToast({ type: "error", message: "Couldn't move the task." });
+        void qc.invalidateQueries({ queryKey: keys.tasks(toCol) });
+        void qc.invalidateQueries({ queryKey: keys.tasks(fromCol) });
+      });
   };
 
   if (isPending || (boardId && contents.isPending)) {
@@ -209,7 +284,12 @@ export function BoardView() {
 
   return (
     <div className="app-main app-main-board">
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
         <div className="app-board-columns">
           {columns.map((col, i) => (
             <DroppableColumn

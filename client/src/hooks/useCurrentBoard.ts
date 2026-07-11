@@ -1,6 +1,6 @@
 import { useParams } from "react-router";
 import type { BoardDTO } from "@kanban/shared";
-import { useBoard } from "@/hooks/useBoardQueries";
+import { useBoardContents } from "@/hooks/useBoardQueries";
 
 type UseCurrentBoardResult = {
   boardId: string | null;
@@ -8,15 +8,16 @@ type UseCurrentBoardResult = {
   isPending: boolean;
 };
 
-// Reads the board id from the URL (/board/:boardId) and fetches that board.
-// When there's no id in the route (e.g. the dashboard) the query stays disabled.
+// Reads the board id from the URL (/board/:boardId) and pulls the board from the
+// shared board-contents query. Because Layout, Header, and BoardView all use
+// that same query, React Query dedupes them into a single /full request.
 export function useCurrentBoard(): UseCurrentBoardResult {
   const { boardId } = useParams<{ boardId?: string }>();
-  const query = useBoard(boardId ?? "");
+  const query = useBoardContents(boardId ?? "");
 
   return {
     boardId: boardId ?? null,
-    board: boardId ? (query.data ?? null) : null,
+    board: boardId ? (query.data?.board ?? null) : null,
     isPending: Boolean(boardId) && query.isPending,
   };
 }
