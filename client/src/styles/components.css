@@ -487,6 +487,64 @@
     min-height: 100vh;
   }
 
+  /* Board members / collaborators */
+  .app-member-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--lines);
+  }
+  .app-member-row:last-child {
+    border-bottom: none;
+  }
+  .app-member-identity {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .app-member-name {
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+  .app-member-email,
+  .app-member-role {
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  .app-member-owner-badge {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 14%, transparent);
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .app-member-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .app-link-button {
+    background: none;
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px;
+    white-space: nowrap;
+  }
+  .app-member-invite-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .app-member-invite-row > * {
+    flex: 1;
+  }
+
   /* Login page — centered card */
   .app-login {
     min-height: 100dvh;

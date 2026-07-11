@@ -29,6 +29,7 @@ boardRoutes.post(
 boardRoutes.get("/:boardId/columns", column.listColumns);
 
 // Collaborators.
+boardRoutes.get("/:boardId/members", board.getMembers);
 boardRoutes.post(
   "/:boardId/collaborators",
   validateBody(board.inviteSchema),

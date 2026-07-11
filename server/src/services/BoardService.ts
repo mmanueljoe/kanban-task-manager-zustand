@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
+import type { BoardMemberDTO } from "@kanban/shared";
 import { Board, type CollaboratorRole } from "@/domain/Board.js";
 import { BoardRepository } from "@/repositories/BoardRepository.js";
+import { UserRepository } from "@/repositories/UserRepository.js";
 import {
   ConflictError,
   NotAuthorizedError,
@@ -10,7 +12,8 @@ import {
 
 export class BoardService {
   constructor(
-    private readonly boards: BoardRepository = new BoardRepository()
+    private readonly boards: BoardRepository = new BoardRepository(),
+    private readonly users: UserRepository = new UserRepository()
   ) {}
 
   async createBoard(ownerId: string, name: string): Promise<Board> {
@@ -56,27 +59,70 @@ export class BoardService {
     await this.boards.delete(boardId);
   }
 
+  // Every person on the board (owner + collaborators) with display info.
+  async listMembers(
+    userId: string,
+    boardId: string
+  ): Promise<BoardMemberDTO[]> {
+    const board = await this.requireBoard(boardId);
+    if (board.getAccessLevel(userId) === null) {
+      throw new NotAuthorizedError("You don't have access to this board");
+    }
+    const users = await this.users.findByIds([
+      board.ownerId,
+      ...board.collaborators.map((c) => c.userId),
+    ]);
+    const byId = new Map(users.map((u) => [u.id, u]));
+
+    const members: BoardMemberDTO[] = [];
+    const owner = byId.get(board.ownerId);
+    if (owner) {
+      members.push({
+        userId: owner.id,
+        name: owner.name,
+        email: owner.email,
+        role: "OWNER",
+      });
+    }
+    for (const c of board.collaborators) {
+      const u = byId.get(c.userId);
+      if (u) {
+        members.push({
+          userId: u.id,
+          name: u.name,
+          email: u.email,
+          role: c.role,
+        });
+      }
+    }
+    return members;
+  }
+
+  // Invite by email — users don't know each other's ids. Resolves the email to
+  // a user, then applies the owner/duplicate rules.
   async inviteCollaborator(
     actingUserId: string,
     boardId: string,
-    collaboratorUserId: string,
+    email: string,
     role: CollaboratorRole
   ): Promise<void> {
     const board = await this.requireBoard(boardId);
     this.requireOwner(board, actingUserId, "invite collaborators");
-    if (collaboratorUserId === board.ownerId) {
+
+    const invitee = await this.users.findByEmail(email);
+    if (!invitee) {
+      throw new NotFoundError("No user with that email");
+    }
+    if (invitee.id === board.ownerId) {
       throw new ValidationError("The owner cannot be added as a collaborator");
     }
-    if (board.collaborators.some((c) => c.userId === collaboratorUserId)) {
+    if (board.collaborators.some((c) => c.userId === invitee.id)) {
       throw new ConflictError("That user is already a collaborator");
     }
     // Entity re-validates as defense-in-depth; our checks above give the right
     // HTTP status first.
-    board.addCollaborator(actingUserId, { userId: collaboratorUserId, role });
-    await this.boards.addCollaborator(boardId, {
-      userId: collaboratorUserId,
-      role,
-    });
+    board.addCollaborator(actingUserId, { userId: invitee.id, role });
+    await this.boards.addCollaborator(boardId, { userId: invitee.id, role });
   }
 
   async changeCollaboratorRole(

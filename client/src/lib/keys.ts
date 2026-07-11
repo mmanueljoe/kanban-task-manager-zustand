@@ -6,6 +6,7 @@ export const keys = {
   board: (boardId: string) => ["boards", boardId] as const,
 
   columns: (boardId: string) => ["boards", boardId, "columns"] as const,
+  members: (boardId: string) => ["boards", boardId, "members"] as const,
 
   tasks: (columnId: string) => ["columns", columnId, "tasks"] as const,
 };

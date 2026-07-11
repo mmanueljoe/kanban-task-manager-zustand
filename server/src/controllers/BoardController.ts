@@ -24,7 +24,7 @@ export const renameBoardSchema = z.object({
 });
 
 export const inviteSchema = z.object({
-  userId: z.string().min(1, "userId is required"),
+  email: z.email("A valid email is required"),
   role: z.enum(["EDITOR", "VIEWER"]),
 });
 
@@ -87,12 +87,18 @@ export const deleteBoard: RequestHandler = async (req, res) => {
   res.status(200).json(success(null));
 };
 
+export const getMembers: RequestHandler = async (req, res) => {
+  const { boardId } = req.params as { boardId: string };
+  const members = await boardService.listMembers(requireUserId(req), boardId);
+  res.status(200).json(success(members));
+};
+
 export const inviteCollaborator: RequestHandler = async (req, res) => {
   const { boardId } = req.params as { boardId: string };
   await boardService.inviteCollaborator(
     requireUserId(req),
     boardId,
-    req.body.userId,
+    req.body.email,
     req.body.role
   );
   res.status(201).json(success(null));

@@ -44,6 +44,15 @@ export type BoardDTO = {
   collaborators: CollaboratorDTO[];
 };
 
+// A person on a board, with the user info the UI needs to display them. The
+// owner appears with role "OWNER".
+export type BoardMemberDTO = {
+  userId: string;
+  name: string;
+  email: string;
+  role: "OWNER" | CollaboratorRole;
+};
+
 export type ColumnDTO = {
   id: string;
   boardId: string;

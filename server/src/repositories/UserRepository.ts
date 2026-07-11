@@ -48,4 +48,11 @@ export class UserRepository {
     const row = await prisma.user.findUnique({ where: { email } });
     return row ? toDomain(row) : null;
   }
+
+  // Bulk lookup for turning a board's collaborator ids into displayable people.
+  async findByIds(ids: string[]): Promise<User[]> {
+    if (ids.length === 0) return [];
+    const rows = await prisma.user.findMany({ where: { id: { in: ids } } });
+    return rows.map(toDomain);
+  }
 }

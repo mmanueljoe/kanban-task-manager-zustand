@@ -14,6 +14,7 @@ type HeaderProps = {
   onAddTask?: () => void;
   onCreateBoard?: () => void;
   onEditBoard?: () => void;
+  onManageCollaborators?: () => void;
   onDeleteBoard?: () => void;
   canEditBoard?: boolean;
 };
@@ -53,6 +54,7 @@ export function Header({
   onAddTask,
   onCreateBoard,
   onEditBoard,
+  onManageCollaborators,
   onDeleteBoard,
   canEditBoard = false,
 }: HeaderProps) {
@@ -274,6 +276,17 @@ export function Header({
                 }}
               >
                 Edit Board
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className="dropdown-option app-menu-item"
+                onClick={() => {
+                  onManageCollaborators?.();
+                  setMenuOpen(false);
+                }}
+              >
+                Manage Collaborators
               </button>
               <button
                 type="button"

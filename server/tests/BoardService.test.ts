@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { BoardService } from "@/services/BoardService.js";
 import { BoardRepository } from "@/repositories/BoardRepository.js";
+import { UserRepository } from "@/repositories/UserRepository.js";
 import { Board } from "@/domain/Board.js";
+import { User } from "@/domain/User.js";
 import {
   ConflictError,
   NotAuthorizedError,
@@ -39,6 +41,19 @@ function fakeRepo(overrides: Partial<BoardRepository> = {}): BoardRepository {
     removeCollaborator: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   } as unknown as BoardRepository;
+}
+
+function makeUser(id: string, email: string): User {
+  return new User({ id, name: id, email, passwordHash: "hash" });
+}
+
+function fakeUsers(overrides: Partial<UserRepository> = {}): UserRepository {
+  return {
+    findByEmail: vi.fn().mockResolvedValue(null),
+    findById: vi.fn().mockResolvedValue(null),
+    findByIds: vi.fn().mockResolvedValue([]),
+    ...overrides,
+  } as unknown as UserRepository;
 }
 
 describe("BoardService", () => {
@@ -126,12 +141,17 @@ describe("BoardService", () => {
   });
 
   describe("inviteCollaborator", () => {
-    it("lets the owner invite and persists the collaborator row", async () => {
+    it("resolves the email and persists the collaborator row", async () => {
       const repo = fakeRepo();
-      await new BoardService(repo).inviteCollaborator(
+      const users = fakeUsers({
+        findByEmail: vi
+          .fn()
+          .mockResolvedValue(makeUser("new-user", "new@example.com")),
+      });
+      await new BoardService(repo, users).inviteCollaborator(
         OWNER,
         "board-1",
-        "new-user",
+        "new@example.com",
         "EDITOR"
       );
       expect(repo.addCollaborator).toHaveBeenCalledWith("board-1", {
@@ -140,26 +160,43 @@ describe("BoardService", () => {
       });
     });
 
+    it("throws NotFound when no user has that email", async () => {
+      const repo = fakeRepo();
+      await expect(
+        new BoardService(repo, fakeUsers()).inviteCollaborator(
+          OWNER,
+          "board-1",
+          "ghost@example.com",
+          "EDITOR"
+        )
+      ).rejects.toBeInstanceOf(NotFoundError);
+    });
+
     it("denies a non-owner (403, not 500) and never persists", async () => {
       const repo = fakeRepo();
       await expect(
-        new BoardService(repo).inviteCollaborator(
+        new BoardService(repo, fakeUsers()).inviteCollaborator(
           EDITOR,
           "board-1",
-          "new-user",
+          "new@example.com",
           "EDITOR"
         )
       ).rejects.toBeInstanceOf(NotAuthorizedError);
       expect(repo.addCollaborator).not.toHaveBeenCalled();
     });
 
-    it("rejects a duplicate collaborator with a conflict", async () => {
+    it("rejects an email that's already a collaborator with a conflict", async () => {
       const repo = fakeRepo();
+      const users = fakeUsers({
+        findByEmail: vi
+          .fn()
+          .mockResolvedValue(makeUser(EDITOR, "editor@example.com")),
+      });
       await expect(
-        new BoardService(repo).inviteCollaborator(
+        new BoardService(repo, users).inviteCollaborator(
           OWNER,
           "board-1",
-          EDITOR,
+          "editor@example.com",
           "VIEWER"
         )
       ).rejects.toBeInstanceOf(ConflictError);
