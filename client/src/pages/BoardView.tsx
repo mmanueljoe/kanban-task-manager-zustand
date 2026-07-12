@@ -1,7 +1,7 @@
 import { useState, useCallback, memo } from "react";
 import { Link } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import type { ColumnDTO, TaskDTO } from "@kanban/shared";
+import type { BoardContentsDTO, ColumnDTO, TaskDTO } from "@kanban/shared";
 import { Button } from "@components/ui/Button";
 import { AddColumnModal } from "@components/modals/AddColumnModal";
 import { TaskDetailsModal } from "@components/modals/TaskDetailsModal";
@@ -94,11 +94,17 @@ const SortableTask = memo(function SortableTask({
 const DroppableColumn = memo(function DroppableColumn({
   column,
   colorIndex,
+  index,
+  columnCount,
   onOpenTask,
+  onMoveColumn,
 }: {
   column: ColumnDTO;
   colorIndex: number;
+  index: number;
+  columnCount: number;
   onOpenTask: (task: TaskDTO, columnId: string, columnName: string) => void;
+  onMoveColumn: (columnId: string, direction: -1 | 1) => void;
 }) {
   const { data: tasks = [] } = useTasks(column.id);
   // The task list is the drop target — id is the column, so an empty column
@@ -126,6 +132,28 @@ const DroppableColumn = memo(function DroppableColumn({
         <h2 className="app-board-column-title">
           {column.name} ({tasks.length})
         </h2>
+        {columnCount > 1 && (
+          <div className="app-board-column-actions">
+            <button
+              type="button"
+              className="app-board-column-move"
+              aria-label={`Move ${column.name} left`}
+              disabled={index === 0}
+              onClick={() => onMoveColumn(column.id, -1)}
+            >
+              <span aria-hidden="true">‹</span>
+            </button>
+            <button
+              type="button"
+              className="app-board-column-move"
+              aria-label={`Move ${column.name} right`}
+              disabled={index === columnCount - 1}
+              onClick={() => onMoveColumn(column.id, 1)}
+            >
+              <span aria-hidden="true">›</span>
+            </button>
+          </div>
+        )}
       </div>
       <SortableContext
         items={tasks.map((t) => t.id)}
@@ -162,6 +190,48 @@ export function BoardView() {
     (task: TaskDTO, columnId: string, columnName: string) =>
       setSelected({ taskId: task.id, columnId, columnName }),
     []
+  );
+
+  // Reorder a column one step left (-1) or right (+1). Same shape as the task
+  // move: optimistically reorder the cache, PATCH the new position, then let the
+  // server's answer settle in — on failure we refetch to roll back and toast.
+  const moveColumn = useCallback(
+    (columnId: string, direction: -1 | 1) => {
+      const contentsKey = [...keys.board(boardId ?? ""), "full"];
+      const current = qc.getQueryData<BoardContentsDTO>(contentsKey);
+      if (!current) return;
+
+      const cols = current.columns;
+      const from = cols.findIndex((c) => c.id === columnId);
+      const to = from + direction;
+      if (from === -1 || to < 0 || to >= cols.length) return;
+
+      const reordered = arrayMove(cols, from, to);
+      const before = to > 0 ? reordered[to - 1].position : null;
+      const after =
+        to < reordered.length - 1 ? reordered[to + 1].position : null;
+      const position = positionBetween(before, after);
+      const withPosition = reordered.map((c) =>
+        c.id === columnId ? { ...c, position } : c
+      );
+
+      qc.setQueryData<BoardContentsDTO>(contentsKey, {
+        ...current,
+        columns: withPosition,
+      });
+      qc.setQueryData<ColumnDTO[]>(keys.columns(boardId ?? ""), withPosition);
+
+      api
+        .patch(`/columns/${columnId}/position`, { position })
+        .then(() => {
+          void qc.invalidateQueries({ queryKey: contentsKey });
+        })
+        .catch(() => {
+          showToast({ type: "error", message: "Couldn't move the column." });
+          void qc.invalidateQueries({ queryKey: contentsKey });
+        });
+    },
+    [boardId, qc, showToast]
   );
 
   const sensors = useSensors(
@@ -313,7 +383,10 @@ export function BoardView() {
               key={col.id}
               column={col}
               colorIndex={i}
+              index={i}
+              columnCount={columns.length}
               onOpenTask={openTask}
+              onMoveColumn={moveColumn}
             />
           ))}
           <button
