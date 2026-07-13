@@ -33,6 +33,7 @@ model User {
   role UserRole @default(USER)
   ownedBoards Board[]
   collaborations BoardCollaborator[]
+  activities Activity[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -57,6 +58,7 @@ model Board {
   name String
   columns Column[]
   collaborators BoardCollaborator[]
+  activities Activity[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   owner User @relation(fields: [ownerId], references: [id])
@@ -95,4 +97,35 @@ model Subtask {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+enum ActivityType {
+  TASK_CREATED
+  TASK_MOVED
+  TASK_UPDATED
+  TASK_DELETED
+  COLUMN_CREATED
+  COLUMN_RENAMED
+  COLUMN_DELETED
+  BOARD_RENAMED
+  MEMBER_INVITED
+  MEMBER_ROLE_CHANGED
+  MEMBER_REMOVED
+}
+
+model Activity {
+  id String @id @default(uuid())
+  boardId String
+  actorId String
+  type ActivityType
+  // A snapshot of the human-readable facts (e.g. task title, from/to column) as
+  // they were at the time. Stored instead of joined so renaming or deleting a
+  // task later never rewrites history.
+  details Json
+  createdAt DateTime @default(now())
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  actor User @relation(fields: [actorId], references: [id])
+
+  // The feed always asks "this board, newest first" — index both columns for it.
+  @@index([boardId, createdAt])
 }

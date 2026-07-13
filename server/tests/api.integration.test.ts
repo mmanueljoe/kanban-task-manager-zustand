@@ -30,6 +30,10 @@ const repos = vi.hoisted(() => ({
   },
   column: {},
   task: {},
+  activity: {
+    create: vi.fn(),
+    findByBoardId: vi.fn(),
+  },
 }));
 
 vi.mock("@/config/env.js", () => ({
@@ -63,6 +67,11 @@ vi.mock("@/repositories/TaskRepository.js", () => ({
     return repos.task;
   }),
 }));
+vi.mock("@/repositories/ActivityRepository.js", () => ({
+  ActivityRepository: vi.fn(function () {
+    return repos.activity;
+  }),
+}));
 
 // Imported AFTER the mocks are declared (vitest hoists vi.mock above imports).
 import argon2 from "argon2";
@@ -70,6 +79,7 @@ import { app } from "@/app.js";
 import { signAuthToken } from "@/utils/jwt.js";
 import { User } from "@/domain/User.js";
 import { Board } from "@/domain/Board.js";
+import { Activity } from "@/domain/Activity.js";
 
 const USER_ID = "11111111-1111-1111-1111-111111111111";
 const OTHER_ID = "99999999-9999-9999-9999-999999999999";
@@ -290,5 +300,53 @@ describe("Boards CRUD", () => {
 
     expect(res.status).toBe(403);
     expect(res.body.status).toBe("error");
+  });
+});
+
+describe("Activity feed", () => {
+  it("returns the board's activity for a member", async () => {
+    const board = new Board({
+      id: "board-1",
+      ownerId: USER_ID,
+      name: "Product Roadmap",
+      collaborators: [],
+    });
+    repos.board.findById.mockResolvedValue(board);
+    repos.activity.findByBoardId.mockResolvedValue([
+      new Activity({
+        id: "a1",
+        boardId: "board-1",
+        actorId: USER_ID,
+        type: "TASK_MOVED",
+        details: { taskTitle: "Design the landing page", toColumn: "Done" },
+        createdAt: new Date("2026-01-01T00:00:00Z"),
+      }),
+    ]);
+
+    const res = await request(app)
+      .get("/api/boards/board-1/activity")
+      .set("Cookie", await authCookie());
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.data[0].type).toBe("TASK_MOVED");
+    expect(res.body.data[0].createdAt).toBe("2026-01-01T00:00:00.000Z");
+    expect(repos.activity.findByBoardId).toHaveBeenCalledWith("board-1");
+  });
+
+  it("returns 403 when a stranger asks for the feed", async () => {
+    const board = new Board({
+      id: "board-1",
+      ownerId: OTHER_ID,
+      name: "Not yours",
+      collaborators: [],
+    });
+    repos.board.findById.mockResolvedValue(board);
+
+    const res = await request(app)
+      .get("/api/boards/board-1/activity")
+      .set("Cookie", await authCookie());
+
+    expect(res.status).toBe(403);
   });
 });

@@ -3,6 +3,7 @@ import { authenticate } from "@/middlewares/authenticate.js";
 import { validateBody } from "@/middlewares/validate.js";
 import * as board from "@/controllers/BoardController.js";
 import * as column from "@/controllers/ColumnController.js";
+import * as activity from "@/controllers/ActivityController.js";
 
 export const boardRoutes = Router();
 
@@ -27,6 +28,9 @@ boardRoutes.post(
   column.addColumn
 );
 boardRoutes.get("/:boardId/columns", column.listColumns);
+
+// Activity feed for the board.
+boardRoutes.get("/:boardId/activity", activity.listActivity);
 
 // Collaborators.
 boardRoutes.get("/:boardId/members", board.getMembers);

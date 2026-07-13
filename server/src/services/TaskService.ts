@@ -1,10 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { Task } from "@/domain/Task.js";
+import type { Column } from "@/domain/Column.js";
 import { TaskRepository } from "@/repositories/TaskRepository.js";
 import { ColumnRepository } from "@/repositories/ColumnRepository.js";
 import { BoardRepository } from "@/repositories/BoardRepository.js";
 import { NotAuthorizedError, NotFoundError } from "@/errors/AppError.js";
 import { placeByLocator } from "@/utils/positioning.js";
+import { eventBus, type EventPublisher } from "@/events/eventBus.js";
 
 // Tasks (and their subtasks) are content, so every change needs owner/editor
 // access to the board — reached by walking task → column → board.
@@ -12,7 +14,8 @@ export class TaskService {
   constructor(
     private readonly tasks: TaskRepository = new TaskRepository(),
     private readonly columns: ColumnRepository = new ColumnRepository(),
-    private readonly boards: BoardRepository = new BoardRepository()
+    private readonly boards: BoardRepository = new BoardRepository(),
+    private readonly events: EventPublisher = eventBus
   ) {}
 
   async createTask(
@@ -91,7 +94,7 @@ export class TaskService {
   ): Promise<Task> {
     const task = await this.requireTask(taskId);
     await this.requireCanModifyColumn(userId, task.columnId);
-    await this.requireCanModifyColumn(userId, toColumnId);
+    const destColumn = await this.requireCanModifyColumn(userId, toColumnId);
 
     // Siblings = tasks already in the destination, minus this task itself (a
     // same-column reorder still sees its old slot in the list).
@@ -107,21 +110,27 @@ export class TaskService {
     if (placement.type === "single") {
       task.moveTo(placement.position);
       await this.tasks.update(task);
-      return task;
+    } else {
+      // No gap left — rewrite the whole destination column in one transaction,
+      // with this task spliced into its landing slot.
+      const order = [...destination];
+      order.splice(placement.movedIndex, 0, task);
+      task.moveTo(placement.positions[placement.movedIndex]!);
+      await this.tasks.reposition(
+        order.map((t, i) => ({
+          id: t.id,
+          position: placement.positions[i]!,
+          columnId: t.id === taskId ? toColumnId : undefined,
+        }))
+      );
     }
 
-    // No gap left — rewrite the whole destination column in one transaction,
-    // with this task spliced into its landing slot.
-    const order = [...destination];
-    order.splice(placement.movedIndex, 0, task);
-    task.moveTo(placement.positions[placement.movedIndex]!);
-    await this.tasks.reposition(
-      order.map((t, i) => ({
-        id: t.id,
-        position: placement.positions[i]!,
-        columnId: t.id === taskId ? toColumnId : undefined,
-      }))
-    );
+    await this.events.publish({
+      type: "TASK_MOVED",
+      boardId: destColumn.boardId,
+      actorId: userId,
+      details: { taskTitle: task.title, toColumn: destColumn.name },
+    });
     return task;
   }
 
@@ -184,7 +193,7 @@ export class TaskService {
   private async requireCanModifyColumn(
     userId: string,
     columnId: string
-  ): Promise<void> {
+  ): Promise<Column> {
     const column = await this.columns.findById(columnId);
     if (!column) {
       throw new NotFoundError("Column not found");
@@ -196,5 +205,6 @@ export class TaskService {
     if (!board.canModifyContent(userId)) {
       throw new NotAuthorizedError("You can't modify this board");
     }
+    return column;
   }
 }

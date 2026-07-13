@@ -83,3 +83,27 @@ export type BoardContentsDTO = {
   columns: ColumnDTO[];
   tasks: TaskDTO[];
 };
+
+export type ActivityType =
+  | "TASK_CREATED"
+  | "TASK_MOVED"
+  | "TASK_UPDATED"
+  | "TASK_DELETED"
+  | "COLUMN_CREATED"
+  | "COLUMN_RENAMED"
+  | "COLUMN_DELETED"
+  | "BOARD_RENAMED"
+  | "MEMBER_INVITED"
+  | "MEMBER_ROLE_CHANGED"
+  | "MEMBER_REMOVED";
+
+export type ActivityDetails = Record<string, string | number | boolean | null>;
+
+export type ActivityDTO = {
+  id: string;
+  boardId: string;
+  actorId: string;
+  type: ActivityType;
+  details: ActivityDetails;
+  createdAt: string;
+};

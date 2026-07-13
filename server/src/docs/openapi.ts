@@ -100,6 +100,7 @@ export const openApiSpec = {
     { name: "Boards", description: "Board CRUD and collaborators" },
     { name: "Columns", description: "Column CRUD and reorder" },
     { name: "Tasks", description: "Task CRUD, move, and subtasks" },
+    { name: "Activity", description: "Per-board activity feed" },
   ],
   paths: {
     "/auth/register": {
@@ -239,6 +240,18 @@ export const openApiSpec = {
         summary: "Board with all columns and tasks in one payload",
         responses: {
           "200": okItem("BoardContentsDTO"),
+          "403": errors.Forbidden,
+          "404": errors.NotFound,
+        },
+      },
+    },
+    "/boards/{boardId}/activity": {
+      parameters: [boardIdParam],
+      get: {
+        tags: ["Activity"],
+        summary: "The board's activity feed (newest first)",
+        responses: {
+          "200": okList("ActivityDTO"),
           "403": errors.Forbidden,
           "404": errors.NotFound,
         },
@@ -709,6 +722,38 @@ export const openApiSpec = {
           board: ref("BoardDTO"),
           columns: { type: "array", items: ref("ColumnDTO") },
           tasks: { type: "array", items: ref("TaskDTO") },
+        },
+      },
+      ActivityDTO: {
+        type: "object",
+        required: ["id", "boardId", "actorId", "type", "details", "createdAt"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+          boardId: { type: "string", format: "uuid" },
+          actorId: { type: "string", format: "uuid" },
+          type: {
+            type: "string",
+            enum: [
+              "TASK_CREATED",
+              "TASK_MOVED",
+              "TASK_UPDATED",
+              "TASK_DELETED",
+              "COLUMN_CREATED",
+              "COLUMN_RENAMED",
+              "COLUMN_DELETED",
+              "BOARD_RENAMED",
+              "MEMBER_INVITED",
+              "MEMBER_ROLE_CHANGED",
+              "MEMBER_REMOVED",
+            ],
+          },
+          details: {
+            type: "object",
+            additionalProperties: true,
+            description:
+              "Snapshot of readable facts (e.g. taskTitle, toColumn).",
+          },
+          createdAt: { type: "string", format: "date-time" },
         },
       },
     },
