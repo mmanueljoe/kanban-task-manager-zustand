@@ -25,9 +25,13 @@ export const editTaskSchema = z
     }
   );
 
+// `position` is a placement *locator*, not a stored value: the client sends
+// where-between-neighbours it dropped the card (frequently fractional). The
+// service converts it to a real integer slot, so any finite number is valid
+// here — the storage stays Int because the server, not the client, chooses it.
 export const moveTaskSchema = z.object({
   toColumnId: z.string().min(1, "toColumnId is required"),
-  position: z.number(),
+  position: z.number().finite(),
 });
 
 export const addSubtaskSchema = z.object({

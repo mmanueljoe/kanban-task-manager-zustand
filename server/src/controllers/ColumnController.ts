@@ -15,8 +15,11 @@ export const renameColumnSchema = z.object({
   name: z.string().min(1, "Column name is required"),
 });
 
+// `position` is a placement *locator*, not a stored value (see the note on
+// moveTaskSchema in TaskController). The service turns this finite number into a
+// real integer slot, so storage stays Int regardless of what the client sends.
 export const reorderColumnSchema = z.object({
-  position: z.number(),
+  position: z.number().finite(),
 });
 
 export const addColumn: RequestHandler = async (req, res) => {

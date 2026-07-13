@@ -147,7 +147,7 @@ export const openApiSpec = {
         responses: {
           "200": okItem("UserDTO", "Logged in; sets the auth cookie"),
           "400": errors.ValidationError,
-          "403": errors.NotAuthenticated,
+          "401": errors.NotAuthenticated,
         },
       },
     },
@@ -165,7 +165,7 @@ export const openApiSpec = {
         summary: "Current authenticated user",
         responses: {
           "200": okItem("UserDTO"),
-          "403": errors.NotAuthenticated,
+          "401": errors.NotAuthenticated,
         },
       },
     },
@@ -176,7 +176,7 @@ export const openApiSpec = {
         summary: "List boards the user owns or collaborates on",
         responses: {
           "200": okList("BoardDTO"),
-          "403": errors.NotAuthenticated,
+          "401": errors.NotAuthenticated,
         },
       },
       post: {
@@ -192,7 +192,7 @@ export const openApiSpec = {
         responses: {
           "201": okItem("BoardDTO"),
           "400": errors.ValidationError,
-          "403": errors.NotAuthenticated,
+          "401": errors.NotAuthenticated,
         },
       },
     },
@@ -570,9 +570,7 @@ export const openApiSpec = {
       },
       NotAuthenticated: {
         description:
-          "Not authenticated (missing/invalid session). NOTE: this API " +
-          "currently returns 403 — not the more conventional 401 — for " +
-          "authentication failures.",
+          "Not authenticated — missing, invalid, or expired session.",
         content: {
           "application/json": {
             schema: ref("ErrorResponse"),

@@ -19,6 +19,13 @@ export class ValidationError extends AppError {
   }
 }
 
+// 401 — we don't know who you are: no credentials, or they're invalid/expired.
+export class NotAuthenticatedError extends AppError {
+  constructor(message = "Not authenticated") {
+    super(message, 401);
+  }
+}
+
 // 403 — you're known, but not allowed to do this.
 export class NotAuthorizedError extends AppError {
   constructor(message = "Not authorized") {

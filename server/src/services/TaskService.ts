@@ -4,6 +4,7 @@ import { TaskRepository } from "@/repositories/TaskRepository.js";
 import { ColumnRepository } from "@/repositories/ColumnRepository.js";
 import { BoardRepository } from "@/repositories/BoardRepository.js";
 import { NotAuthorizedError, NotFoundError } from "@/errors/AppError.js";
+import { placeByLocator } from "@/utils/positioning.js";
 
 // Tasks (and their subtasks) are content, so every change needs owner/editor
 // access to the board — reached by walking task → column → board.
@@ -78,18 +79,49 @@ export class TaskService {
 
   // A drag between columns: change the column (its status) and its slot. The
   // caller must be able to modify both the source and destination boards.
+  //
+  // `locator` is the client's where-between hint (often fractional); the server
+  // turns it into a real integer slot, re-sequencing the destination column when
+  // the neighbours have no gap left. See utils/positioning.
   async moveTask(
     userId: string,
     taskId: string,
     toColumnId: string,
-    position: number
+    locator: number
   ): Promise<Task> {
     const task = await this.requireTask(taskId);
     await this.requireCanModifyColumn(userId, task.columnId);
     await this.requireCanModifyColumn(userId, toColumnId);
+
+    // Siblings = tasks already in the destination, minus this task itself (a
+    // same-column reorder still sees its old slot in the list).
+    const destination = (await this.tasks.findByColumnId(toColumnId)).filter(
+      (t) => t.id !== taskId
+    );
+    const placement = placeByLocator(
+      destination.map((t) => t.position),
+      locator
+    );
     task.moveToColumn(toColumnId);
-    task.moveTo(position);
-    await this.tasks.update(task);
+
+    if (placement.type === "single") {
+      task.moveTo(placement.position);
+      await this.tasks.update(task);
+      return task;
+    }
+
+    // No gap left — rewrite the whole destination column in one transaction,
+    // with this task spliced into its landing slot.
+    const order = [...destination];
+    order.splice(placement.movedIndex, 0, task);
+    task.moveTo(placement.positions[placement.movedIndex]!);
+    await this.tasks.reposition(
+      order.map((t, i) => ({
+        id: t.id,
+        position: placement.positions[i]!,
+        columnId: t.id === taskId ? toColumnId : undefined,
+      }))
+    );
     return task;
   }
 

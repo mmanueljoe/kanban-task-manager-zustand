@@ -48,6 +48,7 @@ function fakeColumns(
     delete: vi.fn().mockResolvedValue(undefined),
     maxPosition: vi.fn().mockResolvedValue(2000),
     findByBoardId: vi.fn().mockResolvedValue([]),
+    reposition: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   } as unknown as ColumnRepository;
 }
@@ -121,6 +122,63 @@ describe("ColumnService", () => {
           "x"
         )
       ).rejects.toBeInstanceOf(NotFoundError);
+    });
+  });
+
+  describe("reorderColumn", () => {
+    const other = (id: string, position: number) =>
+      new Column({ id, boardId: "board-1", name: id, position });
+
+    it("drops into the integer gap between two neighbours", async () => {
+      const columns = fakeColumns({
+        findByBoardId: vi
+          .fn()
+          .mockResolvedValue([
+            makeColumn(),
+            other("col-x", 2000),
+            other("col-y", 3000),
+          ]),
+      });
+      const column = await new ColumnService(
+        columns,
+        fakeBoards()
+      ).reorderColumn(EDITOR, "col-1", 2500);
+      expect(column.position).toBe(2500);
+      expect(columns.update).toHaveBeenCalledTimes(1);
+      expect(columns.reposition).not.toHaveBeenCalled();
+    });
+
+    it("re-sequences the board when neighbours are adjacent", async () => {
+      const columns = fakeColumns({
+        findByBoardId: vi
+          .fn()
+          .mockResolvedValue([
+            makeColumn(),
+            other("col-x", 2000),
+            other("col-y", 2001),
+          ]),
+      });
+      const column = await new ColumnService(
+        columns,
+        fakeBoards()
+      ).reorderColumn(EDITOR, "col-1", 2000.5);
+      expect(column.position).toBe(2000);
+      expect(columns.update).not.toHaveBeenCalled();
+      expect(columns.reposition).toHaveBeenCalledWith([
+        { id: "col-x", position: 1000 },
+        { id: "col-1", position: 2000 },
+        { id: "col-y", position: 3000 },
+      ]);
+    });
+
+    it("denies a viewer", async () => {
+      await expect(
+        new ColumnService(fakeColumns(), fakeBoards()).reorderColumn(
+          VIEWER,
+          "col-1",
+          1500
+        )
+      ).rejects.toBeInstanceOf(NotAuthorizedError);
     });
   });
 

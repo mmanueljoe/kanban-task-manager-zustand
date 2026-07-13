@@ -48,6 +48,19 @@ export class ColumnRepository {
     await prisma.column.delete({ where: { id } });
   }
 
+  // A re-sequence of one board's columns: rewrite every listed position in a
+  // single transaction so a reorder is never observed half-applied.
+  async reposition(entries: { id: string; position: number }[]): Promise<void> {
+    await prisma.$transaction(
+      entries.map((entry) =>
+        prisma.column.update({
+          where: { id: entry.id },
+          data: { position: entry.position },
+        })
+      )
+    );
+  }
+
   // The largest position currently in this board's columns, or 0 if none — so a
   // new column can be appended at maxPosition + a gap.
   async maxPosition(boardId: string): Promise<number> {

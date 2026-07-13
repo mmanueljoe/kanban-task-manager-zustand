@@ -63,6 +63,7 @@ function fakeTasks(overrides: Partial<TaskRepository> = {}): TaskRepository {
     delete: vi.fn().mockResolvedValue(undefined),
     maxPosition: vi.fn().mockResolvedValue(5000),
     findByColumnId: vi.fn().mockResolvedValue([]),
+    reposition: vi.fn().mockResolvedValue(undefined),
     addSubtask: vi.fn().mockResolvedValue(undefined),
     setSubtaskCompleted: vi.fn().mockResolvedValue(undefined),
     removeSubtask: vi.fn().mockResolvedValue(undefined),
@@ -114,16 +115,58 @@ describe("TaskService", () => {
   });
 
   describe("moveTask", () => {
-    it("moves the task to a new column + position and persists it", async () => {
-      const tasks = fakeTasks();
+    it("moves the task to an empty column at the opening gap", async () => {
+      const tasks = fakeTasks(); // findByColumnId → [] (empty destination)
       const task = await new TaskService(
         tasks,
         fakeColumns(),
         fakeBoards()
       ).moveTask(EDITOR, "task-1", "col-2", 2500);
       expect(task.columnId).toBe("col-2");
-      expect(task.position).toBe(2500);
+      expect(task.position).toBe(1000); // first slot, not the raw locator
       expect(tasks.update).toHaveBeenCalledTimes(1);
+      expect(tasks.reposition).not.toHaveBeenCalled();
+    });
+
+    it("drops into the integer gap between two neighbours", async () => {
+      const dest = [
+        new Task({ id: "t-a", columnId: "col-2", title: "A", position: 1000 }),
+        new Task({ id: "t-b", columnId: "col-2", title: "B", position: 2000 }),
+      ];
+      const tasks = fakeTasks({
+        findByColumnId: vi.fn().mockResolvedValue(dest),
+      });
+      const task = await new TaskService(
+        tasks,
+        fakeColumns(),
+        fakeBoards()
+      ).moveTask(EDITOR, "task-1", "col-2", 1500); // client's midpoint locator
+      expect(task.position).toBe(1500);
+      expect(tasks.update).toHaveBeenCalledTimes(1);
+      expect(tasks.reposition).not.toHaveBeenCalled();
+    });
+
+    it("re-sequences the destination when neighbours are adjacent", async () => {
+      const dest = [
+        new Task({ id: "t-a", columnId: "col-2", title: "A", position: 1000 }),
+        new Task({ id: "t-b", columnId: "col-2", title: "B", position: 1001 }),
+      ];
+      const tasks = fakeTasks({
+        findByColumnId: vi.fn().mockResolvedValue(dest),
+      });
+      const task = await new TaskService(
+        tasks,
+        fakeColumns(),
+        fakeBoards()
+      ).moveTask(EDITOR, "task-1", "col-2", 1000.5); // no integer gap here
+      expect(task.columnId).toBe("col-2");
+      expect(task.position).toBe(2000); // spliced between, fresh gaps
+      expect(tasks.update).not.toHaveBeenCalled();
+      expect(tasks.reposition).toHaveBeenCalledWith([
+        { id: "t-a", position: 1000, columnId: undefined },
+        { id: "task-1", position: 2000, columnId: "col-2" },
+        { id: "t-b", position: 3000, columnId: undefined },
+      ]);
     });
   });
 

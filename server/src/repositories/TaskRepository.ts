@@ -79,6 +79,25 @@ export class TaskRepository {
     await prisma.task.delete({ where: { id } });
   }
 
+  // A re-sequence of one column: rewrite every listed row's position in a single
+  // transaction so the board never observes a half-applied ordering. The moved
+  // task may also carry a new columnId when the drag crossed columns.
+  async reposition(
+    entries: { id: string; position: number; columnId?: string }[]
+  ): Promise<void> {
+    await prisma.$transaction(
+      entries.map((entry) =>
+        prisma.task.update({
+          where: { id: entry.id },
+          data:
+            entry.columnId !== undefined
+              ? { position: entry.position, columnId: entry.columnId }
+              : { position: entry.position },
+        })
+      )
+    );
+  }
+
   async maxPosition(columnId: string): Promise<number> {
     const result = await prisma.task.aggregate({
       where: { columnId },

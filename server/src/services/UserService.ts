@@ -4,6 +4,7 @@ import { User } from "@/domain/User.js";
 import { UserRepository } from "@/repositories/UserRepository.js";
 import {
   ConflictError,
+  NotAuthenticatedError,
   NotAuthorizedError,
   NotFoundError,
 } from "@/errors/AppError.js";
@@ -44,7 +45,7 @@ export class UserService {
   async login(input: { email: string; password: string }): Promise<User> {
     const user = await this.users.findByEmail(input.email);
     if (!user) {
-      throw new NotAuthorizedError("Invalid email or password");
+      throw new NotAuthenticatedError("Invalid email or password");
     }
 
     const passwordMatches = await argon2.verify(
@@ -52,7 +53,7 @@ export class UserService {
       input.password
     );
     if (!passwordMatches) {
-      throw new NotAuthorizedError("Invalid email or password");
+      throw new NotAuthenticatedError("Invalid email or password");
     }
 
     return user;

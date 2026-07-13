@@ -165,7 +165,7 @@ describe("Auth routes", () => {
     expect(setCookie.join(";")).toMatch(/token=/);
   });
 
-  it("rejects a wrong password with 403", async () => {
+  it("rejects a wrong password with 401", async () => {
     const passwordHash = await argon2.hash("Password123!");
     repos.user.findByEmail.mockResolvedValue(fakeUser({ passwordHash }));
 
@@ -174,33 +174,32 @@ describe("Auth routes", () => {
       password: "wrong-password",
     });
 
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401);
     expect(res.body.status).toBe("error");
   });
 });
 
-// NOTE: this app maps every auth failure — no token, bad token, wrong password —
-// to NotAuthorizedError (403). Strictly, *authentication* failures (not logged
-// in) should be 401 and only *authorization* failures (logged in, not allowed)
-// should be 403. These tests assert the app's ACTUAL behaviour (403); see the
-// follow-up task about splitting 401 out from 403.
+// Authentication failures — no token, bad token, wrong password — return 401
+// (NotAuthenticatedError). *Authorization* failures — logged in but not allowed
+// — return 403 (see the RBAC case in "Boards CRUD"). Keeping the two distinct is
+// the standard HTTP contract.
 describe("Protected routes", () => {
-  it("returns 403 for /auth/me without a cookie", async () => {
+  it("returns 401 for /auth/me without a cookie", async () => {
     const res = await request(app).get("/api/auth/me");
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401);
     expect(res.body.status).toBe("error");
   });
 
-  it("returns 403 for /boards without a cookie", async () => {
+  it("returns 401 for /boards without a cookie", async () => {
     const res = await request(app).get("/api/boards");
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401);
   });
 
-  it("returns 403 when the cookie is a garbage token", async () => {
+  it("returns 401 when the cookie is a garbage token", async () => {
     const res = await request(app)
       .get("/api/boards")
       .set("Cookie", "token=not.a.real.jwt");
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401);
   });
 
   it("returns the current user for /auth/me with a valid cookie", async () => {

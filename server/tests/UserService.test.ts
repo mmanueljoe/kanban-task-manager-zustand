@@ -3,7 +3,7 @@ import argon2 from "argon2";
 import { UserService } from "@/services/UserService.js";
 import { UserRepository } from "@/repositories/UserRepository.js";
 import { User } from "@/domain/User.js";
-import { ConflictError } from "@/errors/AppError.js";
+import { ConflictError, NotAuthenticatedError } from "@/errors/AppError.js";
 
 // A fake repository. `vi.fn()` makes a stand-in function we can (a) tell what to
 // return and (b) later ask "were you called, and with what?". We cast it to
@@ -68,5 +68,53 @@ describe("UserService.register", () => {
     await expect(service.register(input)).rejects.toBeInstanceOf(ConflictError);
     // And it must NOT try to create a second account.
     expect(repo.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("UserService.login", () => {
+  // A registered user whose password is `input.password`, so a correct login
+  // succeeds and a wrong one exercises the argon2.verify branch.
+  async function makeRegisteredUser(): Promise<User> {
+    return new User({
+      id: "u1",
+      name: input.name,
+      email: input.email,
+      passwordHash: await argon2.hash(input.password),
+    });
+  }
+
+  it("returns the user for the right email + password", async () => {
+    const repo = makeFakeRepo();
+    vi.mocked(repo.findByEmail).mockResolvedValue(await makeRegisteredUser());
+    const service = new UserService(repo);
+
+    const user = await service.login({
+      email: input.email,
+      password: input.password,
+    });
+
+    expect(user.email).toBe(input.email);
+  });
+
+  // Bad credentials mean "we don't know who you are" — 401, not 403. A missing
+  // email and a wrong password are indistinguishable to the caller on purpose,
+  // so we don't leak whether an account exists.
+  it("throws NotAuthenticatedError (401) when the email is unknown", async () => {
+    const repo = makeFakeRepo(); // findByEmail defaults to null
+    const service = new UserService(repo);
+
+    await expect(
+      service.login({ email: "nobody@example.com", password: input.password })
+    ).rejects.toBeInstanceOf(NotAuthenticatedError);
+  });
+
+  it("throws NotAuthenticatedError (401) when the password is wrong", async () => {
+    const repo = makeFakeRepo();
+    vi.mocked(repo.findByEmail).mockResolvedValue(await makeRegisteredUser());
+    const service = new UserService(repo);
+
+    await expect(
+      service.login({ email: input.email, password: "wrong password" })
+    ).rejects.toBeInstanceOf(NotAuthenticatedError);
   });
 });

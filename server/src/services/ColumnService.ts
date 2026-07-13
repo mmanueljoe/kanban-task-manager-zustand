@@ -3,6 +3,7 @@ import { Column } from "@/domain/Column.js";
 import { ColumnRepository } from "@/repositories/ColumnRepository.js";
 import { BoardRepository } from "@/repositories/BoardRepository.js";
 import { NotAuthorizedError, NotFoundError } from "@/errors/AppError.js";
+import { placeByLocator } from "@/utils/positioning.js";
 
 export class ColumnService {
   constructor(
@@ -51,15 +52,39 @@ export class ColumnService {
     await this.columns.delete(columnId);
   }
 
+  // `locator` is the client's where-between hint (often fractional); the server
+  // turns it into a real integer slot, re-sequencing the board's columns when
+  // the neighbours have no gap left. See utils/positioning.
   async reorderColumn(
     userId: string,
     columnId: string,
-    position: number
+    locator: number
   ): Promise<Column> {
     const column = await this.requireColumn(columnId);
     await this.requireCanModify(userId, column.boardId);
-    column.moveTo(position);
-    await this.columns.update(column);
+
+    const siblings = (await this.columns.findByBoardId(column.boardId)).filter(
+      (c) => c.id !== columnId
+    );
+    const placement = placeByLocator(
+      siblings.map((c) => c.position),
+      locator
+    );
+
+    if (placement.type === "single") {
+      column.moveTo(placement.position);
+      await this.columns.update(column);
+      return column;
+    }
+
+    // No gap left — rewrite the whole board's columns in one transaction, with
+    // this column spliced into its landing slot.
+    const order = [...siblings];
+    order.splice(placement.movedIndex, 0, column);
+    column.moveTo(placement.positions[placement.movedIndex]!);
+    await this.columns.reposition(
+      order.map((c, i) => ({ id: c.id, position: placement.positions[i]! }))
+    );
     return column;
   }
 
