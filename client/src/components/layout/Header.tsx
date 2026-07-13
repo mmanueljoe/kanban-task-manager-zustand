@@ -16,6 +16,7 @@ type HeaderProps = {
   onEditBoard?: () => void;
   onManageCollaborators?: () => void;
   onDeleteBoard?: () => void;
+  onViewActivity?: () => void;
   canEditBoard?: boolean;
 };
 
@@ -56,6 +57,7 @@ export function Header({
   onEditBoard,
   onManageCollaborators,
   onDeleteBoard,
+  onViewActivity,
   canEditBoard = false,
 }: HeaderProps) {
   const { data: boards = [] } = useBoards();
@@ -264,41 +266,56 @@ export function Header({
           >
             <img src={iconEllipsis} alt="" width={5} height={20} />
           </button>
-          {menuOpen && canEditBoard && (
+          {menuOpen && boardId && (
             <div role="menu" className="app-menu-panel app-menu-panel--wide">
               <button
                 type="button"
                 role="menuitem"
                 className="dropdown-option app-menu-item"
                 onClick={() => {
-                  onEditBoard?.();
+                  onViewActivity?.();
                   setMenuOpen(false);
                 }}
               >
-                Edit Board
+                Activity
               </button>
-              <button
-                type="button"
-                role="menuitem"
-                className="dropdown-option app-menu-item"
-                onClick={() => {
-                  onManageCollaborators?.();
-                  setMenuOpen(false);
-                }}
-              >
-                Manage Collaborators
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                className="dropdown-option app-menu-item app-menu-item--danger"
-                onClick={() => {
-                  onDeleteBoard?.();
-                  setMenuOpen(false);
-                }}
-              >
-                Delete Board
-              </button>
+              {canEditBoard && (
+                <>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="dropdown-option app-menu-item"
+                    onClick={() => {
+                      onEditBoard?.();
+                      setMenuOpen(false);
+                    }}
+                  >
+                    Edit Board
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="dropdown-option app-menu-item"
+                    onClick={() => {
+                      onManageCollaborators?.();
+                      setMenuOpen(false);
+                    }}
+                  >
+                    Manage Collaborators
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="dropdown-option app-menu-item app-menu-item--danger"
+                    onClick={() => {
+                      onDeleteBoard?.();
+                      setMenuOpen(false);
+                    }}
+                  >
+                    Delete Board
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>

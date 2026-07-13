@@ -7,6 +7,7 @@ export const keys = {
 
   columns: (boardId: string) => ["boards", boardId, "columns"] as const,
   members: (boardId: string) => ["boards", boardId, "members"] as const,
+  activity: (boardId: string) => ["boards", boardId, "activity"] as const,
 
   tasks: (columnId: string) => ["columns", columnId, "tasks"] as const,
 };

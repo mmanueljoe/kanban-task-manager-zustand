@@ -7,6 +7,7 @@ import { AddTaskModal } from "@components/modals/AddTaskModal";
 import { DeleteBoardModal } from "@components/modals/DeleteBoardModal";
 import { EditBoardModal } from "@components/modals/EditBoardModal";
 import { ManageCollaboratorsModal } from "@components/modals/ManageCollaboratorsModal";
+import { ActivityModal } from "@components/modals/ActivityModal";
 import { AddBoardModal } from "@components/modals/AddBoardModal";
 import { useCurrentBoard } from "@/hooks/useCurrentBoard";
 import { useBoardContents } from "@/hooks/useBoardQueries";
@@ -51,6 +52,7 @@ export function Layout() {
   const [addBoardOpen, setAddBoardOpen] = useState(false);
   const [editBoardOpen, setEditBoardOpen] = useState(false);
   const [collaboratorsOpen, setCollaboratorsOpen] = useState(false);
+  const [activityOpen, setActivityOpen] = useState(false);
   const [deleteBoardOpen, setDeleteBoardOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
@@ -78,6 +80,7 @@ export function Layout() {
           onCreateBoard={() => setAddBoardOpen(true)}
           onEditBoard={() => setEditBoardOpen(true)}
           onManageCollaborators={() => setCollaboratorsOpen(true)}
+          onViewActivity={() => setActivityOpen(true)}
           onDeleteBoard={() => setDeleteBoardOpen(true)}
           canEditBoard={board != null}
         />
@@ -106,6 +109,11 @@ export function Layout() {
           <ManageCollaboratorsModal
             open={collaboratorsOpen}
             onClose={() => setCollaboratorsOpen(false)}
+            boardId={board.id}
+          />
+          <ActivityModal
+            open={activityOpen}
+            onClose={() => setActivityOpen(false)}
             boardId={board.id}
           />
           <DeleteBoardModal

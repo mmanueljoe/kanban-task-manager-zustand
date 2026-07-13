@@ -180,6 +180,9 @@ async function main() {
       },
     });
 
+    // Reset the feed so a reseed starts from a clean, known history.
+    await tx.activity.deleteMany({ where: { boardId: IDS.board } });
+
     // Bob can edit the board, Carol can only view it — enough to demo the two
     // collaborator access levels end to end.
     await tx.boardCollaborator.upsert({
