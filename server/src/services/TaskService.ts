@@ -23,7 +23,7 @@ export class TaskService {
     columnId: string,
     input: { title: string; description?: string }
   ): Promise<Task> {
-    await this.requireCanModifyColumn(userId, columnId);
+    const column = await this.requireCanModifyColumn(userId, columnId);
     const position = (await this.tasks.maxPosition(columnId)) + 1000;
     const task = new Task({
       id: randomUUID(),
@@ -32,7 +32,14 @@ export class TaskService {
       description: input.description,
       position,
     });
-    return this.tasks.create(task);
+    const created = await this.tasks.create(task);
+    await this.events.publish({
+      type: "TASK_CREATED",
+      boardId: column.boardId,
+      actorId: userId,
+      details: { taskTitle: created.title, column: column.name },
+    });
+    return created;
   }
 
   // Any access level may read every task on a board (for the composite fetch).
@@ -69,7 +76,7 @@ export class TaskService {
     input: { title?: string; description?: string }
   ): Promise<Task> {
     const task = await this.requireTask(taskId);
-    await this.requireCanModifyColumn(userId, task.columnId);
+    const column = await this.requireCanModifyColumn(userId, task.columnId);
     if (input.title !== undefined) {
       task.rename(input.title);
     }
@@ -77,6 +84,12 @@ export class TaskService {
       task.editDescription(input.description);
     }
     await this.tasks.update(task);
+    await this.events.publish({
+      type: "TASK_UPDATED",
+      boardId: column.boardId,
+      actorId: userId,
+      details: { taskTitle: task.title },
+    });
     return task;
   }
 
@@ -136,8 +149,15 @@ export class TaskService {
 
   async deleteTask(userId: string, taskId: string): Promise<void> {
     const task = await this.requireTask(taskId);
-    await this.requireCanModifyColumn(userId, task.columnId);
+    const column = await this.requireCanModifyColumn(userId, task.columnId);
+    const taskTitle = task.title;
     await this.tasks.delete(taskId);
+    await this.events.publish({
+      type: "TASK_DELETED",
+      boardId: column.boardId,
+      actorId: userId,
+      details: { taskTitle },
+    });
   }
 
   async addSubtask(

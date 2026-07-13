@@ -9,11 +9,13 @@ import {
   NotFoundError,
   ValidationError,
 } from "@/errors/AppError.js";
+import { eventBus, type EventPublisher } from "@/events/eventBus.js";
 
 export class BoardService {
   constructor(
     private readonly boards: BoardRepository = new BoardRepository(),
-    private readonly users: UserRepository = new UserRepository()
+    private readonly users: UserRepository = new UserRepository(),
+    private readonly events: EventPublisher = eventBus
   ) {}
 
   async createBoard(ownerId: string, name: string): Promise<Board> {
@@ -50,6 +52,12 @@ export class BoardService {
     }
     board.rename(name);
     await this.boards.update(board);
+    await this.events.publish({
+      type: "BOARD_RENAMED",
+      boardId,
+      actorId: userId,
+      details: { boardName: name },
+    });
     return board;
   }
 
@@ -123,6 +131,12 @@ export class BoardService {
     // HTTP status first.
     board.addCollaborator(actingUserId, { userId: invitee.id, role });
     await this.boards.addCollaborator(boardId, { userId: invitee.id, role });
+    await this.events.publish({
+      type: "MEMBER_INVITED",
+      boardId,
+      actorId: actingUserId,
+      details: { email: invitee.email, role },
+    });
   }
 
   async changeCollaboratorRole(
@@ -136,6 +150,12 @@ export class BoardService {
     this.requireCollaborator(board, collaboratorUserId);
     board.changeCollaboratorRole(actingUserId, collaboratorUserId, role);
     await this.boards.updateCollaboratorRole(boardId, collaboratorUserId, role);
+    await this.events.publish({
+      type: "MEMBER_ROLE_CHANGED",
+      boardId,
+      actorId: actingUserId,
+      details: { memberId: collaboratorUserId, role },
+    });
   }
 
   async removeCollaborator(
@@ -148,6 +168,12 @@ export class BoardService {
     this.requireCollaborator(board, collaboratorUserId);
     board.removeCollaborator(actingUserId, collaboratorUserId);
     await this.boards.removeCollaborator(boardId, collaboratorUserId);
+    await this.events.publish({
+      type: "MEMBER_REMOVED",
+      boardId,
+      actorId: actingUserId,
+      details: { memberId: collaboratorUserId },
+    });
   }
 
   async transferOwnership(

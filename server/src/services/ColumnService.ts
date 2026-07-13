@@ -4,11 +4,13 @@ import { ColumnRepository } from "@/repositories/ColumnRepository.js";
 import { BoardRepository } from "@/repositories/BoardRepository.js";
 import { NotAuthorizedError, NotFoundError } from "@/errors/AppError.js";
 import { placeByLocator } from "@/utils/positioning.js";
+import { eventBus, type EventPublisher } from "@/events/eventBus.js";
 
 export class ColumnService {
   constructor(
     private readonly columns: ColumnRepository = new ColumnRepository(),
-    private readonly boards: BoardRepository = new BoardRepository()
+    private readonly boards: BoardRepository = new BoardRepository(),
+    private readonly events: EventPublisher = eventBus
   ) {}
 
   async addColumn(
@@ -19,7 +21,14 @@ export class ColumnService {
     await this.requireCanModify(userId, boardId);
     const position = (await this.columns.maxPosition(boardId)) + 1000;
     const column = new Column({ id: randomUUID(), boardId, name, position });
-    return this.columns.create(column);
+    const created = await this.columns.create(column);
+    await this.events.publish({
+      type: "COLUMN_CREATED",
+      boardId,
+      actorId: userId,
+      details: { columnName: created.name },
+    });
+    return created;
   }
 
   // Any access level may read a board's columns.
@@ -41,15 +50,30 @@ export class ColumnService {
   ): Promise<Column> {
     const column = await this.requireColumn(columnId);
     await this.requireCanModify(userId, column.boardId);
+    const previousName = column.name;
     column.rename(name);
     await this.columns.update(column);
+    await this.events.publish({
+      type: "COLUMN_RENAMED",
+      boardId: column.boardId,
+      actorId: userId,
+      details: { columnName: name, previousName },
+    });
     return column;
   }
 
   async deleteColumn(userId: string, columnId: string): Promise<void> {
     const column = await this.requireColumn(columnId);
     await this.requireCanModify(userId, column.boardId);
+    const columnName = column.name;
+    const boardId = column.boardId;
     await this.columns.delete(columnId);
+    await this.events.publish({
+      type: "COLUMN_DELETED",
+      boardId,
+      actorId: userId,
+      details: { columnName },
+    });
   }
 
   // `locator` is the client's where-between hint (often fractional); the server
