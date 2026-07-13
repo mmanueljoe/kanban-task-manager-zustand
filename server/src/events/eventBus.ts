@@ -5,6 +5,9 @@ export type BoardEvent = {
   type: ActivityType;
   boardId: string;
   actorId: string;
+  // Present when the event concerns a specific user (assigned, invited, …), so
+  // listeners like notifications know who to reach without parsing `details`.
+  targetUserId?: string;
   details: ActivityDetails;
 };
 

@@ -4,7 +4,11 @@ import type { Column } from "@/domain/Column.js";
 import { TaskRepository } from "@/repositories/TaskRepository.js";
 import { ColumnRepository } from "@/repositories/ColumnRepository.js";
 import { BoardRepository } from "@/repositories/BoardRepository.js";
-import { NotAuthorizedError, NotFoundError } from "@/errors/AppError.js";
+import {
+  NotAuthorizedError,
+  NotFoundError,
+  ValidationError,
+} from "@/errors/AppError.js";
 import { placeByLocator } from "@/utils/positioning.js";
 import { eventBus, type EventPublisher } from "@/events/eventBus.js";
 
@@ -144,6 +148,38 @@ export class TaskService {
       actorId: userId,
       details: { taskTitle: task.title, toColumn: destColumn.name },
     });
+    return task;
+  }
+
+  // Assign the task to a board member, or clear it with `null`. The assignee
+  // must have access to the board — you can't assign work to a stranger.
+  async assignTask(
+    userId: string,
+    taskId: string,
+    assigneeId: string | null
+  ): Promise<Task> {
+    const task = await this.requireTask(taskId);
+    const column = await this.requireCanModifyColumn(userId, task.columnId);
+    const board = await this.boards.findById(column.boardId);
+    if (!board) {
+      throw new NotFoundError("Board not found");
+    }
+    if (assigneeId !== null && board.getAccessLevel(assigneeId) === null) {
+      throw new ValidationError("The assignee must be a member of this board");
+    }
+
+    task.assignTo(assigneeId);
+    await this.tasks.update(task);
+
+    if (assigneeId !== null) {
+      await this.events.publish({
+        type: "TASK_ASSIGNED",
+        boardId: board.id,
+        actorId: userId,
+        targetUserId: assigneeId,
+        details: { taskTitle: task.title, assigneeId },
+      });
+    }
     return task;
   }
 

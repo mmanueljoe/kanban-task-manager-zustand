@@ -514,6 +514,30 @@ export const openApiSpec = {
         },
       },
     },
+    "/tasks/{taskId}/assign": {
+      parameters: [taskIdParam],
+      patch: {
+        tags: ["Tasks"],
+        summary: "Assign the task to a board member (or null to clear)",
+        requestBody: body({
+          type: "object",
+          required: ["assigneeId"],
+          properties: {
+            assigneeId: {
+              type: ["string", "null"],
+              format: "uuid",
+              description: "Board member's user id, or null to unassign.",
+            },
+          },
+        }),
+        responses: {
+          "200": okItem("TaskDTO"),
+          "400": errors.ValidationError,
+          "403": errors.Forbidden,
+          "404": errors.NotFound,
+        },
+      },
+    },
     "/tasks/{taskId}/subtasks": {
       parameters: [taskIdParam],
       post: {
@@ -704,6 +728,7 @@ export const openApiSpec = {
           "title",
           "description",
           "position",
+          "assignedTo",
           "subtasks",
         ],
         properties: {
@@ -712,6 +737,11 @@ export const openApiSpec = {
           title: { type: "string" },
           description: { type: "string" },
           position: { type: "number" },
+          assignedTo: {
+            type: ["string", "null"],
+            format: "uuid",
+            description: "User id of the assignee, or null if unassigned.",
+          },
           subtasks: { type: "array", items: ref("SubtaskDTO") },
         },
       },
@@ -738,6 +768,7 @@ export const openApiSpec = {
               "TASK_MOVED",
               "TASK_UPDATED",
               "TASK_DELETED",
+              "TASK_ASSIGNED",
               "COLUMN_CREATED",
               "COLUMN_RENAMED",
               "COLUMN_DELETED",

@@ -34,6 +34,7 @@ model User {
   ownedBoards Board[]
   collaborations BoardCollaborator[]
   activities Activity[]
+  assignedTasks Task[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -82,10 +83,12 @@ model Task {
   title String
   description String @default("")
   position Int
+  assignedToId String?
   subtasks Subtask[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   column Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  assignee User? @relation(fields: [assignedToId], references: [id])
 }
 
 model Subtask {
@@ -104,6 +107,7 @@ enum ActivityType {
   TASK_MOVED
   TASK_UPDATED
   TASK_DELETED
+  TASK_ASSIGNED
   COLUMN_CREATED
   COLUMN_RENAMED
   COLUMN_DELETED

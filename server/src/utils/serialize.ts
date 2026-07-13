@@ -46,6 +46,7 @@ export function serializeTask(task: Task): TaskDTO {
     title: task.title,
     description: task.description,
     position: task.position,
+    assignedTo: task.assignedToId,
     subtasks: task.subtasks.map((s) => ({
       id: s.id,
       title: s.title,

@@ -42,6 +42,20 @@ export function useDeleteTask(columnId: string) {
   });
 }
 
+export function useAssignTask(columnId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      taskId,
+      assigneeId,
+    }: {
+      taskId: string;
+      assigneeId: string | null;
+    }) => api.patch<TaskDTO>(`/tasks/${taskId}/assign`, { assigneeId }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.tasks(columnId) }),
+  });
+}
+
 type MoveVars = {
   task: TaskDTO;
   fromColumnId: string;

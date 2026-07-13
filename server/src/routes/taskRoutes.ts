@@ -14,6 +14,11 @@ taskRoutes.patch(
   validateBody(task.moveTaskSchema),
   task.moveTask
 );
+taskRoutes.patch(
+  "/:taskId/assign",
+  validateBody(task.assignTaskSchema),
+  task.assignTask
+);
 
 // Subtasks nested under their task.
 taskRoutes.post(

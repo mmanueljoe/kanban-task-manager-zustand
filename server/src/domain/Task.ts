@@ -10,6 +10,7 @@ export class Task {
   private _title: string;
   private _description: string;
   private _position: number;
+  private _assignedToId: string | null;
   private _subtasks: Subtask[];
 
   constructor(params: {
@@ -18,6 +19,7 @@ export class Task {
     title: string;
     description?: string;
     position: number;
+    assignedToId?: string | null;
     subtasks?: Subtask[];
   }) {
     if (!params.title.trim()) throw new Error("Task title can't be empty");
@@ -28,6 +30,7 @@ export class Task {
     this._title = params.title;
     this._description = params.description ?? "";
     this._position = params.position;
+    this._assignedToId = params.assignedToId ?? null;
     this._subtasks = params.subtasks ?? [];
   }
 
@@ -51,6 +54,10 @@ export class Task {
     return this._position;
   }
 
+  get assignedToId(): string | null {
+    return this._assignedToId;
+  }
+
   get subtasks(): readonly Subtask[] {
     return [...this._subtasks];
   }
@@ -71,6 +78,10 @@ export class Task {
   moveToColumn(newColumnId: string): void {
     if (!newColumnId.trim()) throw new Error("A column id is required");
     this._columnId = newColumnId;
+  }
+
+  assignTo(userId: string | null): void {
+    this._assignedToId = userId;
   }
 
   addSubtask(subtask: Subtask): void {

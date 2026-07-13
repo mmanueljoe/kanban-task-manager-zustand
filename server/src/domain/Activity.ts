@@ -3,6 +3,7 @@ export type ActivityType =
   | "TASK_MOVED"
   | "TASK_UPDATED"
   | "TASK_DELETED"
+  | "TASK_ASSIGNED"
   | "COLUMN_CREATED"
   | "COLUMN_RENAMED"
   | "COLUMN_DELETED"

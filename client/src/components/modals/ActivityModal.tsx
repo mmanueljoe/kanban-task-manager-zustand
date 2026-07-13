@@ -22,7 +22,11 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
-function describe(activity: ActivityDTO, actor: string): string {
+function describe(
+  activity: ActivityDTO,
+  actor: string,
+  nameById: Map<string, string>
+): string {
   const d = activity.details;
   switch (activity.type) {
     case "TASK_CREATED":
@@ -33,6 +37,8 @@ function describe(activity: ActivityDTO, actor: string): string {
       return `${actor} edited "${d.taskTitle}"`;
     case "TASK_DELETED":
       return `${actor} deleted "${d.taskTitle}"`;
+    case "TASK_ASSIGNED":
+      return `${actor} assigned "${d.taskTitle}" to ${nameById.get(String(d.assigneeId)) ?? "a member"}`;
     case "COLUMN_CREATED":
       return `${actor} added the column "${d.columnName}"`;
     case "COLUMN_RENAMED":
@@ -87,7 +93,8 @@ export function ActivityModal({ open, onClose, boardId }: ActivityModalProps) {
                 <span className="body-m">
                   {describe(
                     activity,
-                    nameById.get(activity.actorId) ?? "Someone"
+                    nameById.get(activity.actorId) ?? "Someone",
+                    nameById
                   )}
                 </span>
                 <span

@@ -2,12 +2,15 @@ import { useState, useRef, useEffect } from "react";
 import type { ColumnDTO } from "@kanban/shared";
 import { Modal } from "../ui/Modal";
 import { Checkbox } from "../ui/Checkbox";
+import { Dropdown } from "../ui/Dropdown";
 import { EditTaskModal } from "./EditTaskModal";
 import {
   useTasks,
   useToggleSubtask,
   useDeleteTask,
+  useAssignTask,
 } from "@/hooks/useTaskQueries";
+import { useMembers } from "@/hooks/useCollaboratorQueries";
 import { useUi } from "@/hooks/useUi";
 import iconEllipsis from "@assets/icon-vertical-ellipsis.svg";
 
@@ -33,6 +36,9 @@ export function TaskDetailsModal({
   const { data: tasks = [] } = useTasks(columnId ?? "");
   const toggleSubtask = useToggleSubtask(columnId ?? "");
   const deleteTask = useDeleteTask(columnId ?? "");
+  const assignTask = useAssignTask(columnId ?? "");
+  const boardId = columns[0]?.boardId ?? "";
+  const { data: members = [] } = useMembers(boardId);
   const { showToast } = useUi();
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -149,6 +155,29 @@ export function TaskDetailsModal({
           </div>
         </div>
       )}
+
+      <div className="input-wrap">
+        <label className="input-label">Assignee</label>
+        <Dropdown
+          options={[
+            { value: "", label: "Unassigned" },
+            ...members.map((m) => ({ value: m.userId, label: m.name })),
+          ]}
+          value={task.assignedTo ?? ""}
+          onChange={(next) =>
+            assignTask.mutate(
+              { taskId: task.id, assigneeId: next === "" ? null : next },
+              {
+                onError: () =>
+                  showToast({
+                    type: "error",
+                    message: "Couldn't update the assignee.",
+                  }),
+              }
+            )
+          }
+        />
+      </div>
 
       <div className="input-wrap">
         <label className="input-label">Current Status</label>

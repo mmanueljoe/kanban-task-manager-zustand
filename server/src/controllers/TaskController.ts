@@ -34,6 +34,11 @@ export const moveTaskSchema = z.object({
   position: z.number().finite(),
 });
 
+// `null` clears the assignee; a string assigns to that board member.
+export const assignTaskSchema = z.object({
+  assigneeId: z.string().min(1, "assigneeId is required").nullable(),
+});
+
 export const addSubtaskSchema = z.object({
   title: z.string().min(1, "Subtask title is required"),
 });
@@ -69,6 +74,16 @@ export const moveTask: RequestHandler = async (req, res) => {
     taskId,
     req.body.toColumnId,
     req.body.position
+  );
+  res.status(200).json(success(serializeTask(task)));
+};
+
+export const assignTask: RequestHandler = async (req, res) => {
+  const { taskId } = req.params as { taskId: string };
+  const task = await taskService.assignTask(
+    requireUserId(req),
+    taskId,
+    req.body.assigneeId
   );
   res.status(200).json(success(serializeTask(task)));
 };

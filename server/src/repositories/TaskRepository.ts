@@ -11,6 +11,7 @@ function toDomain(row: TaskRow): Task {
     title: row.title,
     description: row.description,
     position: row.position,
+    assignedToId: row.assignedToId,
     subtasks: row.subtasks.map((s) => ({
       id: s.id,
       title: s.title,
@@ -71,6 +72,7 @@ export class TaskRepository {
         title: task.title,
         description: task.description,
         position: task.position,
+        assignedToId: task.assignedToId,
       },
     });
   }
