@@ -1,8 +1,15 @@
-import type { BoardDTO, ColumnDTO, TaskDTO, ActivityDTO } from "@kanban/shared";
+import type {
+  BoardDTO,
+  ColumnDTO,
+  TaskDTO,
+  ActivityDTO,
+  CommentDTO,
+} from "@kanban/shared";
 import type { Board } from "@/domain/Board.js";
 import type { Column } from "@/domain/Column.js";
 import type { Task } from "@/domain/Task.js";
 import type { Activity } from "@/domain/Activity.js";
+import type { Comment } from "@/domain/Comment.js";
 
 // Entity → wire DTO, at the edge. Domain objects have private fields and
 // methods; JSON.stringify would leak the `_`-prefixed internals. These map
@@ -25,6 +32,16 @@ export function serializeColumn(column: Column): ColumnDTO {
     boardId: column.boardId,
     name: column.name,
     position: column.position,
+  };
+}
+
+export function serializeComment(comment: Comment): CommentDTO {
+  return {
+    id: comment.id,
+    taskId: comment.taskId,
+    authorId: comment.authorId,
+    body: comment.body,
+    createdAt: comment.createdAt.toISOString(),
   };
 }
 

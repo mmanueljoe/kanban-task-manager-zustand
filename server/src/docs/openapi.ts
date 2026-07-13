@@ -77,6 +77,12 @@ const subtaskIdParam = {
   required: true,
   schema: { type: "string", format: "uuid" },
 };
+const commentIdParam = {
+  name: "commentId",
+  in: "path",
+  required: true,
+  schema: { type: "string", format: "uuid" },
+};
 
 export const openApiSpec = {
   openapi: "3.1.0",
@@ -100,6 +106,7 @@ export const openApiSpec = {
     { name: "Boards", description: "Board CRUD and collaborators" },
     { name: "Columns", description: "Column CRUD and reorder" },
     { name: "Tasks", description: "Task CRUD, move, and subtasks" },
+    { name: "Comments", description: "Task comment threads" },
     { name: "Activity", description: "Per-board activity feed" },
   ],
   paths: {
@@ -538,6 +545,45 @@ export const openApiSpec = {
         },
       },
     },
+    "/tasks/{taskId}/comments": {
+      parameters: [taskIdParam],
+      get: {
+        tags: ["Comments"],
+        summary: "List a task's comments (oldest first)",
+        responses: {
+          "200": okList("CommentDTO"),
+          "403": errors.Forbidden,
+          "404": errors.NotFound,
+        },
+      },
+      post: {
+        tags: ["Comments"],
+        summary: "Add a comment to a task",
+        requestBody: body({
+          type: "object",
+          required: ["body"],
+          properties: { body: { type: "string", minLength: 1 } },
+        }),
+        responses: {
+          "201": okItem("CommentDTO"),
+          "400": errors.ValidationError,
+          "403": errors.Forbidden,
+          "404": errors.NotFound,
+        },
+      },
+    },
+    "/comments/{commentId}": {
+      parameters: [commentIdParam],
+      delete: {
+        tags: ["Comments"],
+        summary: "Delete a comment (author or board owner)",
+        responses: {
+          "200": okNull(),
+          "403": errors.Forbidden,
+          "404": errors.NotFound,
+        },
+      },
+    },
     "/tasks/{taskId}/subtasks": {
       parameters: [taskIdParam],
       post: {
@@ -745,6 +791,17 @@ export const openApiSpec = {
           subtasks: { type: "array", items: ref("SubtaskDTO") },
         },
       },
+      CommentDTO: {
+        type: "object",
+        required: ["id", "taskId", "authorId", "body", "createdAt"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+          taskId: { type: "string", format: "uuid" },
+          authorId: { type: "string", format: "uuid" },
+          body: { type: "string" },
+          createdAt: { type: "string", format: "date-time" },
+        },
+      },
       BoardContentsDTO: {
         type: "object",
         required: ["board", "columns", "tasks"],
@@ -776,6 +833,7 @@ export const openApiSpec = {
               "MEMBER_INVITED",
               "MEMBER_ROLE_CHANGED",
               "MEMBER_REMOVED",
+              "COMMENT_ADDED",
             ],
           },
           details: {

@@ -28,11 +28,17 @@ const repos = vi.hoisted(() => ({
     update: vi.fn(),
     delete: vi.fn(),
   },
-  column: {},
-  task: {},
+  column: { findById: vi.fn() },
+  task: { findById: vi.fn() },
   activity: {
     create: vi.fn(),
     findByBoardId: vi.fn(),
+  },
+  comment: {
+    create: vi.fn(),
+    findByTaskId: vi.fn(),
+    findById: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -72,6 +78,11 @@ vi.mock("@/repositories/ActivityRepository.js", () => ({
     return repos.activity;
   }),
 }));
+vi.mock("@/repositories/CommentRepository.js", () => ({
+  CommentRepository: vi.fn(function () {
+    return repos.comment;
+  }),
+}));
 
 // Imported AFTER the mocks are declared (vitest hoists vi.mock above imports).
 import argon2 from "argon2";
@@ -80,6 +91,9 @@ import { signAuthToken } from "@/utils/jwt.js";
 import { User } from "@/domain/User.js";
 import { Board } from "@/domain/Board.js";
 import { Activity } from "@/domain/Activity.js";
+import { Task } from "@/domain/Task.js";
+import { Column } from "@/domain/Column.js";
+import { Comment } from "@/domain/Comment.js";
 
 const USER_ID = "11111111-1111-1111-1111-111111111111";
 const OTHER_ID = "99999999-9999-9999-9999-999999999999";
@@ -348,5 +362,75 @@ describe("Activity feed", () => {
       .set("Cookie", await authCookie());
 
     expect(res.status).toBe(403);
+  });
+});
+
+describe("Comments", () => {
+  beforeEach(() => {
+    repos.task.findById.mockResolvedValue(
+      new Task({
+        id: "task-1",
+        columnId: "col-1",
+        title: "A task",
+        position: 1000,
+      })
+    );
+    repos.column.findById.mockResolvedValue(
+      new Column({
+        id: "col-1",
+        boardId: "board-1",
+        name: "Todo",
+        position: 1000,
+      })
+    );
+    repos.board.findById.mockResolvedValue(
+      new Board({
+        id: "board-1",
+        ownerId: USER_ID,
+        name: "Product Roadmap",
+        collaborators: [],
+      })
+    );
+  });
+
+  it("adds a comment (201)", async () => {
+    repos.comment.create.mockImplementation(async (c: Comment) => c);
+
+    const res = await request(app)
+      .post("/api/tasks/task-1/comments")
+      .set("Cookie", await authCookie())
+      .send({ body: "Nice work" });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.body).toBe("Nice work");
+  });
+
+  it("rejects an empty comment with 400", async () => {
+    const res = await request(app)
+      .post("/api/tasks/task-1/comments")
+      .set("Cookie", await authCookie())
+      .send({ body: "" });
+
+    expect(res.status).toBe(400);
+    expect(repos.comment.create).not.toHaveBeenCalled();
+  });
+
+  it("lists a task's comments", async () => {
+    repos.comment.findByTaskId.mockResolvedValue([
+      new Comment({
+        id: "c1",
+        taskId: "task-1",
+        authorId: USER_ID,
+        body: "Hello",
+        createdAt: new Date("2026-01-01T00:00:00Z"),
+      }),
+    ]);
+
+    const res = await request(app)
+      .get("/api/tasks/task-1/comments")
+      .set("Cookie", await authCookie());
+
+    expect(res.status).toBe(200);
+    expect(res.body.data[0].body).toBe("Hello");
   });
 });

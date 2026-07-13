@@ -10,4 +10,5 @@ export const keys = {
   activity: (boardId: string) => ["boards", boardId, "activity"] as const,
 
   tasks: (columnId: string) => ["columns", columnId, "tasks"] as const,
+  comments: (taskId: string) => ["tasks", taskId, "comments"] as const,
 };

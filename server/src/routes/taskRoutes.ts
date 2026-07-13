@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authenticate } from "@/middlewares/authenticate.js";
 import { validateBody } from "@/middlewares/validate.js";
 import * as task from "@/controllers/TaskController.js";
+import * as comment from "@/controllers/CommentController.js";
 
 export const taskRoutes = Router();
 
@@ -28,3 +29,11 @@ taskRoutes.post(
 );
 taskRoutes.patch("/:taskId/subtasks/:subtaskId", task.toggleSubtask);
 taskRoutes.delete("/:taskId/subtasks/:subtaskId", task.removeSubtask);
+
+// Comments nested under their task.
+taskRoutes.post(
+  "/:taskId/comments",
+  validateBody(comment.addCommentSchema),
+  comment.addComment
+);
+taskRoutes.get("/:taskId/comments", comment.listComments);

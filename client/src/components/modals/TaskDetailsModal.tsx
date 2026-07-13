@@ -3,6 +3,8 @@ import type { ColumnDTO } from "@kanban/shared";
 import { Modal } from "../ui/Modal";
 import { Checkbox } from "../ui/Checkbox";
 import { Dropdown } from "../ui/Dropdown";
+import { Input } from "../ui/Input";
+import { Button } from "../ui/Button";
 import { EditTaskModal } from "./EditTaskModal";
 import {
   useTasks,
@@ -10,8 +12,15 @@ import {
   useDeleteTask,
   useAssignTask,
 } from "@/hooks/useTaskQueries";
+import {
+  useComments,
+  useAddComment,
+  useRemoveComment,
+} from "@/hooks/useCommentQueries";
 import { useMembers } from "@/hooks/useCollaboratorQueries";
+import { useMe } from "@hooks/useAuthQueries";
 import { useUi } from "@/hooks/useUi";
+import { timeAgo } from "@/lib/time";
 import iconEllipsis from "@assets/icon-vertical-ellipsis.svg";
 
 type TaskDetailsModalProps = {
@@ -39,10 +48,15 @@ export function TaskDetailsModal({
   const assignTask = useAssignTask(columnId ?? "");
   const boardId = columns[0]?.boardId ?? "";
   const { data: members = [] } = useMembers(boardId);
+  const { data: me } = useMe();
+  const { data: comments = [] } = useComments(taskId ?? "", open);
+  const addComment = useAddComment(taskId ?? "");
+  const removeComment = useRemoveComment(taskId ?? "");
   const { showToast } = useUi();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [commentText, setCommentText] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,6 +75,22 @@ export function TaskDetailsModal({
 
   const completed = task.subtasks.filter((s) => s.isCompleted).length;
   const total = task.subtasks.length;
+
+  const nameById = new Map(members.map((m) => [m.userId, m.name]));
+  const ownerId = members.find((m) => m.role === "OWNER")?.userId;
+  const canDeleteComment = (authorId: string) =>
+    me?.id === authorId || me?.id === ownerId;
+
+  const submitComment = (e: React.FormEvent) => {
+    e.preventDefault();
+    const body = commentText.trim();
+    if (!body) return;
+    addComment.mutate(body, {
+      onSuccess: () => setCommentText(""),
+      onError: () =>
+        showToast({ type: "error", message: "Couldn't post the comment." }),
+    });
+  };
 
   const handleDelete = () => {
     deleteTask.mutate(task.id, {
@@ -177,6 +207,73 @@ export function TaskDetailsModal({
             )
           }
         />
+      </div>
+
+      <div className="app-modal-section">
+        <label className="input-label app-modal-subtasks-label">
+          Comments ({comments.length})
+        </label>
+        <div className="app-modal-subtasks-list">
+          {comments.length === 0 ? (
+            <p className="body-s" style={{ color: "var(--text-muted)" }}>
+              No comments yet.
+            </p>
+          ) : (
+            comments.map((comment) => (
+              <div
+                key={comment.id}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 8,
+                }}
+              >
+                <div>
+                  <span
+                    className="body-s"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    {me?.id === comment.authorId
+                      ? "You"
+                      : (nameById.get(comment.authorId) ?? "Someone")}{" "}
+                    · {timeAgo(comment.createdAt)}
+                  </span>
+                  <p className="body-m" style={{ margin: 0 }}>
+                    {comment.body}
+                  </p>
+                </div>
+                {canDeleteComment(comment.authorId) && (
+                  <button
+                    type="button"
+                    className="app-link-button"
+                    aria-label="Delete comment"
+                    onClick={() => removeComment.mutate(comment.id)}
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+        <form
+          onSubmit={submitComment}
+          style={{ display: "flex", gap: 8, marginTop: 12 }}
+        >
+          <Input
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            placeholder="Add a comment…"
+          />
+          <Button
+            type="submit"
+            variant="primary"
+            size="large"
+            disabled={addComment.isPending}
+          >
+            Comment
+          </Button>
+        </form>
       </div>
 
       <div className="input-wrap">

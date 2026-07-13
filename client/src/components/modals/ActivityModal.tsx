@@ -3,24 +3,13 @@ import type { ActivityDTO } from "@kanban/shared";
 import { Modal } from "@components/ui/Modal";
 import { useActivity } from "@hooks/useActivityQueries";
 import { useMembers } from "@hooks/useCollaboratorQueries";
+import { timeAgo } from "@/lib/time";
 
 type ActivityModalProps = {
   open: boolean;
   onClose: () => void;
   boardId: string;
 };
-
-function timeAgo(iso: string): string {
-  const seconds = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
-  if (seconds < 60) return "just now";
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.round(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString();
-}
 
 function describe(
   activity: ActivityDTO,
@@ -53,6 +42,8 @@ function describe(
       return `${actor} changed a member's role to ${String(d.role).toLowerCase()}`;
     case "MEMBER_REMOVED":
       return `${actor} removed a member`;
+    case "COMMENT_ADDED":
+      return `${actor} commented on "${d.taskTitle}"`;
     default:
       return `${actor} updated the board`;
   }

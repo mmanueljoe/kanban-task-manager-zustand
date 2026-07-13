@@ -10,7 +10,8 @@ export type ActivityType =
   | "BOARD_RENAMED"
   | "MEMBER_INVITED"
   | "MEMBER_ROLE_CHANGED"
-  | "MEMBER_REMOVED";
+  | "MEMBER_REMOVED"
+  | "COMMENT_ADDED";
 
 export type ActivityDetails = Record<string, string | number | boolean | null>;
 

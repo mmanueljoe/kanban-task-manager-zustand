@@ -8,6 +8,7 @@ import { authRoutes } from "@/routes/authRoutes.js";
 import { boardRoutes } from "@/routes/boardRoutes.js";
 import { columnRoutes } from "@/routes/columnRoutes.js";
 import { taskRoutes } from "@/routes/taskRoutes.js";
+import { commentRoutes } from "@/routes/commentRoutes.js";
 import { errorHandler } from "@/middlewares/errorHandler.js";
 import { httpLogger } from "@/config/logger.js";
 
@@ -34,5 +35,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/boards", boardRoutes);
 app.use("/api/columns", columnRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/comments", commentRoutes);
 
 app.use(errorHandler);

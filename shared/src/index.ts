@@ -97,7 +97,16 @@ export type ActivityType =
   | "BOARD_RENAMED"
   | "MEMBER_INVITED"
   | "MEMBER_ROLE_CHANGED"
-  | "MEMBER_REMOVED";
+  | "MEMBER_REMOVED"
+  | "COMMENT_ADDED";
+
+export type CommentDTO = {
+  id: string;
+  taskId: string;
+  authorId: string;
+  body: string;
+  createdAt: string;
+};
 
 export type ActivityDetails = Record<string, string | number | boolean | null>;
 
