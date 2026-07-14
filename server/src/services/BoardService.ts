@@ -135,6 +135,7 @@ export class BoardService {
       type: "MEMBER_INVITED",
       boardId,
       actorId: actingUserId,
+      targetUserId: invitee.id,
       details: { email: invitee.email, role },
     });
   }
@@ -154,6 +155,7 @@ export class BoardService {
       type: "MEMBER_ROLE_CHANGED",
       boardId,
       actorId: actingUserId,
+      targetUserId: collaboratorUserId,
       details: { memberId: collaboratorUserId, role },
     });
   }
@@ -172,6 +174,7 @@ export class BoardService {
       type: "MEMBER_REMOVED",
       boardId,
       actorId: actingUserId,
+      targetUserId: collaboratorUserId,
       details: { memberId: collaboratorUserId },
     });
   }

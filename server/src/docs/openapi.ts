@@ -83,6 +83,12 @@ const commentIdParam = {
   required: true,
   schema: { type: "string", format: "uuid" },
 };
+const notificationIdParam = {
+  name: "notificationId",
+  in: "path",
+  required: true,
+  schema: { type: "string", format: "uuid" },
+};
 
 export const openApiSpec = {
   openapi: "3.1.0",
@@ -108,6 +114,7 @@ export const openApiSpec = {
     { name: "Tasks", description: "Task CRUD, move, and subtasks" },
     { name: "Comments", description: "Task comment threads" },
     { name: "Activity", description: "Per-board activity feed" },
+    { name: "Notifications", description: "Per-user notifications" },
   ],
   paths: {
     "/auth/register": {
@@ -584,6 +591,38 @@ export const openApiSpec = {
         },
       },
     },
+    "/notifications": {
+      get: {
+        tags: ["Notifications"],
+        summary: "List your notifications (newest first)",
+        responses: {
+          "200": okList("NotificationDTO"),
+          "401": errors.NotAuthenticated,
+        },
+      },
+    },
+    "/notifications/read-all": {
+      post: {
+        tags: ["Notifications"],
+        summary: "Mark all your notifications read",
+        responses: {
+          "200": okNull(),
+          "401": errors.NotAuthenticated,
+        },
+      },
+    },
+    "/notifications/{notificationId}/read": {
+      parameters: [notificationIdParam],
+      patch: {
+        tags: ["Notifications"],
+        summary: "Mark one notification read",
+        responses: {
+          "200": okNull(),
+          "403": errors.Forbidden,
+          "404": errors.NotFound,
+        },
+      },
+    },
     "/tasks/{taskId}/subtasks": {
       parameters: [taskIdParam],
       post: {
@@ -809,6 +848,29 @@ export const openApiSpec = {
           board: ref("BoardDTO"),
           columns: { type: "array", items: ref("ColumnDTO") },
           tasks: { type: "array", items: ref("TaskDTO") },
+        },
+      },
+      NotificationDTO: {
+        type: "object",
+        required: [
+          "id",
+          "userId",
+          "actorId",
+          "type",
+          "boardId",
+          "details",
+          "read",
+          "createdAt",
+        ],
+        properties: {
+          id: { type: "string", format: "uuid" },
+          userId: { type: "string", format: "uuid" },
+          actorId: { type: "string", format: "uuid" },
+          type: { type: "string", description: "Same set as ActivityType." },
+          boardId: { type: "string", format: "uuid" },
+          details: { type: "object", additionalProperties: true },
+          read: { type: "boolean" },
+          createdAt: { type: "string", format: "date-time" },
         },
       },
       ActivityDTO: {

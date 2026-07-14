@@ -4,12 +4,14 @@ import type {
   TaskDTO,
   ActivityDTO,
   CommentDTO,
+  NotificationDTO,
 } from "@kanban/shared";
 import type { Board } from "@/domain/Board.js";
 import type { Column } from "@/domain/Column.js";
 import type { Task } from "@/domain/Task.js";
 import type { Activity } from "@/domain/Activity.js";
 import type { Comment } from "@/domain/Comment.js";
+import type { Notification } from "@/domain/Notification.js";
 
 // Entity → wire DTO, at the edge. Domain objects have private fields and
 // methods; JSON.stringify would leak the `_`-prefixed internals. These map
@@ -42,6 +44,21 @@ export function serializeComment(comment: Comment): CommentDTO {
     authorId: comment.authorId,
     body: comment.body,
     createdAt: comment.createdAt.toISOString(),
+  };
+}
+
+export function serializeNotification(
+  notification: Notification
+): NotificationDTO {
+  return {
+    id: notification.id,
+    userId: notification.userId,
+    actorId: notification.actorId,
+    type: notification.type,
+    boardId: notification.boardId,
+    details: notification.details,
+    read: notification.read,
+    createdAt: notification.createdAt.toISOString(),
   };
 }
 

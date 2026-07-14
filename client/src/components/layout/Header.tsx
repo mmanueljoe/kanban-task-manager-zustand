@@ -4,6 +4,7 @@ import { useBoards } from "@/hooks/useBoardQueries";
 import { useCurrentBoard } from "@/hooks/useCurrentBoard";
 import { useMe, useLogout } from "@hooks/useAuthQueries";
 import { ThemeToggle } from "@components/ui/ThemeToggle";
+import { NotificationBell } from "@components/layout/NotificationBell";
 import logoMobile from "@assets/logo-mobile.svg";
 import iconChevronDown from "@assets/icon-chevron-down.svg";
 import iconAddTask from "@assets/icon-add-task-mobile.svg";
@@ -217,6 +218,7 @@ export function Header({
           />
           <span className="app-header-add-label">+ Add New Task</span>
         </button>
+        <NotificationBell />
         <div ref={accountMenuRef} className="app-menu-anchor">
           <button
             type="button"

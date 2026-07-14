@@ -118,3 +118,14 @@ export type ActivityDTO = {
   details: ActivityDetails;
   createdAt: string;
 };
+
+export type NotificationDTO = {
+  id: string;
+  userId: string;
+  actorId: string;
+  type: ActivityType;
+  boardId: string;
+  details: ActivityDetails;
+  read: boolean;
+  createdAt: string;
+};

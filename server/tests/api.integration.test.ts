@@ -40,6 +40,13 @@ const repos = vi.hoisted(() => ({
     findById: vi.fn(),
     delete: vi.fn(),
   },
+  notification: {
+    create: vi.fn(),
+    findByUserId: vi.fn(),
+    findById: vi.fn(),
+    markRead: vi.fn(),
+    markAllRead: vi.fn(),
+  },
 }));
 
 vi.mock("@/config/env.js", () => ({
@@ -83,6 +90,11 @@ vi.mock("@/repositories/CommentRepository.js", () => ({
     return repos.comment;
   }),
 }));
+vi.mock("@/repositories/NotificationRepository.js", () => ({
+  NotificationRepository: vi.fn(function () {
+    return repos.notification;
+  }),
+}));
 
 // Imported AFTER the mocks are declared (vitest hoists vi.mock above imports).
 import argon2 from "argon2";
@@ -94,6 +106,7 @@ import { Activity } from "@/domain/Activity.js";
 import { Task } from "@/domain/Task.js";
 import { Column } from "@/domain/Column.js";
 import { Comment } from "@/domain/Comment.js";
+import { Notification } from "@/domain/Notification.js";
 
 const USER_ID = "11111111-1111-1111-1111-111111111111";
 const OTHER_ID = "99999999-9999-9999-9999-999999999999";
@@ -432,5 +445,36 @@ describe("Comments", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data[0].body).toBe("Hello");
+  });
+});
+
+describe("Notifications", () => {
+  it("returns 401 without a cookie", async () => {
+    const res = await request(app).get("/api/notifications");
+    expect(res.status).toBe(401);
+  });
+
+  it("lists the current user's notifications", async () => {
+    repos.notification.findByUserId.mockResolvedValue([
+      new Notification({
+        id: "n1",
+        userId: USER_ID,
+        actorId: OTHER_ID,
+        type: "TASK_ASSIGNED",
+        boardId: "board-1",
+        details: { taskTitle: "Design the landing page" },
+        read: false,
+        createdAt: new Date("2026-01-01T00:00:00Z"),
+      }),
+    ]);
+
+    const res = await request(app)
+      .get("/api/notifications")
+      .set("Cookie", await authCookie());
+
+    expect(res.status).toBe(200);
+    expect(res.body.data[0].type).toBe("TASK_ASSIGNED");
+    expect(res.body.data[0].read).toBe(false);
+    expect(repos.notification.findByUserId).toHaveBeenCalledWith(USER_ID);
   });
 });

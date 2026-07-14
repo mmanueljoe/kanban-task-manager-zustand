@@ -11,4 +11,5 @@ export const keys = {
 
   tasks: (columnId: string) => ["columns", columnId, "tasks"] as const,
   comments: (taskId: string) => ["tasks", taskId, "comments"] as const,
+  notifications: () => ["notifications"] as const,
 };
