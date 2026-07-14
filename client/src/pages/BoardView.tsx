@@ -12,6 +12,7 @@ import { api } from "@/lib/api";
 import { keys } from "@/lib/keys";
 import { positionBetween } from "@/lib/position";
 import { useUi } from "@/hooks/useUi";
+import { useBoardRealtime } from "@/hooks/useRealtime";
 import {
   DndContext,
   type DragEndEvent,
@@ -177,6 +178,7 @@ const DroppableColumn = memo(function DroppableColumn({
 export function BoardView() {
   const { boardId, board, isPending } = useCurrentBoard();
   const contents = useBoardContents(boardId ?? "");
+  useBoardRealtime(boardId ?? "");
   const qc = useQueryClient();
   const { showToast } = useUi();
   const [addColumnOpen, setAddColumnOpen] = useState(false);

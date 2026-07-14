@@ -7,9 +7,9 @@ export function useNotifications() {
   return useQuery({
     queryKey: keys.notifications(),
     queryFn: () => api.get<NotificationDTO[]>("/notifications"),
-    // Poll while there's no real-time channel yet, so the badge stays fresh.
-    // The real-time slice will invalidate this query instead.
-    refetchInterval: 30000,
+    // No polling: real-time invalidates this live, useNotificationRealtime
+    // refetches on socket reconnect (covering anything missed while offline),
+    // and TanStack's refetch-on-focus handles tab-back.
   });
 }
 

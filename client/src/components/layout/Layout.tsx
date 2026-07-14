@@ -11,6 +11,7 @@ import { ActivityModal } from "@components/modals/ActivityModal";
 import { AddBoardModal } from "@components/modals/AddBoardModal";
 import { useCurrentBoard } from "@/hooks/useCurrentBoard";
 import { useBoardContents } from "@/hooks/useBoardQueries";
+import { useNotificationRealtime } from "@/hooks/useRealtime";
 import iconShowSidebar from "@assets/icon-show-sidebar.svg";
 
 const pageVariants = {
@@ -48,6 +49,7 @@ export function Layout() {
   const { board, boardId } = useCurrentBoard();
   const contents = useBoardContents(boardId ?? "");
   const columns = contents.data?.columns ?? [];
+  useNotificationRealtime();
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [addBoardOpen, setAddBoardOpen] = useState(false);
   const [editBoardOpen, setEditBoardOpen] = useState(false);
