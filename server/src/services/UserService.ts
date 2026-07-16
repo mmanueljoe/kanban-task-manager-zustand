@@ -1,12 +1,13 @@
 import { randomUUID } from "node:crypto";
 import argon2 from "argon2";
-import { User } from "@/domain/User.js";
+import { User, type UserRole } from "@/domain/User.js";
 import { UserRepository } from "@/repositories/UserRepository.js";
 import {
   ConflictError,
   NotAuthenticatedError,
   NotAuthorizedError,
   NotFoundError,
+  ValidationError,
 } from "@/errors/AppError.js";
 
 export class UserService {
@@ -59,22 +60,37 @@ export class UserService {
     return user;
   }
 
-  // Platform administration: only an existing admin can promote someone.
-  async promoteToAdmin(
+  // Platform administration — every method below requires the acting user to be
+  // an admin. This is where the ADMIN role earns its keep.
+  async listAllUsers(actingUserId: string): Promise<User[]> {
+    await this.requireAdmin(actingUserId);
+    return this.users.findAll();
+  }
+
+  async setUserRole(
     actingUserId: string,
-    targetUserId: string
+    targetUserId: string,
+    role: UserRole
   ): Promise<User> {
-    const acting = await this.users.findById(actingUserId);
-    if (!acting?.isAdmin()) {
-      throw new NotAuthorizedError("Only an admin can promote users");
+    await this.requireAdmin(actingUserId);
+    // Guard against the last admin locking themselves out.
+    if (actingUserId === targetUserId && role === "USER") {
+      throw new ValidationError("You can't remove your own admin role");
     }
 
     const target = await this.users.findById(targetUserId);
     if (!target) {
       throw new NotFoundError("User not found");
     }
-
-    target.promoteToAdmin();
+    if (role === "ADMIN") target.promoteToAdmin();
+    else target.demoteToUser();
     return this.users.update(target);
+  }
+
+  private async requireAdmin(actingUserId: string): Promise<void> {
+    const acting = await this.users.findById(actingUserId);
+    if (!acting?.isAdmin()) {
+      throw new NotAuthorizedError("Admin access required");
+    }
   }
 }

@@ -7,6 +7,7 @@ import { NotFound } from "@pages/NotFound";
 import { Dashboard } from "@pages/Dashboard";
 import { BoardView } from "@pages/BoardView";
 import { Admin } from "@pages/Admin";
+import { Account } from "@pages/Account";
 import { ProtectedRoute } from "@components/ProtectedRoute";
 
 const pageVariants = {
@@ -63,6 +64,7 @@ export function RouteProvider() {
       >
         <Route index element={<Dashboard />} />
         <Route path="board/:boardId" element={<BoardView />} />
+        <Route path="account" element={<Account />} />
         <Route path="admin" element={<Admin />} />
       </Route>
       <Route

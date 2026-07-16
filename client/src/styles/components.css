@@ -601,4 +601,72 @@
       transform: rotate(360deg);
     }
   }
+
+  /* Shared page-level loading state */
+  .app-page-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 240px;
+    color: var(--text-muted);
+  }
+  .app-page-loader .app-loading-spinner {
+    width: 28px;
+    height: 28px;
+    border-width: 3px;
+  }
+
+  /* Account / Admin pages */
+  .app-info-card {
+    background: var(--secondary-bg);
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .app-info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .app-info-row .app-info-label {
+    color: var(--text-muted);
+  }
+  .app-info-row .app-info-value {
+    color: var(--text-primary);
+  }
+  .app-user-table {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 640px;
+  }
+  .app-user-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    background: var(--secondary-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  .app-user-role {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .app-user-role.app-user-role--user {
+    background: var(--lines);
+    color: var(--text-muted);
+  }
 }

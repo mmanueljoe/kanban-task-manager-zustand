@@ -6,6 +6,7 @@ import { AUTH_COOKIE } from "@/config/cookies.js";
 import { verifyAuthToken } from "@/utils/jwt.js";
 import { eventBus } from "@/events/eventBus.js";
 import { BoardService } from "@/services/BoardService.js";
+import { NotAuthenticatedError } from "@/errors/AppError.js";
 
 function readCookie(
   header: string | undefined,
@@ -30,11 +31,11 @@ export function createSocketServer(httpServer: HttpServer): Server {
   io.use(async (socket, next) => {
     try {
       const token = readCookie(socket.handshake.headers.cookie, AUTH_COOKIE);
-      if (!token) return next(new Error("Not authenticated"));
+      if (!token) return next(new NotAuthenticatedError("Not authenticated"));
       socket.data.userId = await verifyAuthToken(token);
       next();
     } catch {
-      next(new Error("Not authenticated"));
+      next(new NotAuthenticatedError("Not authenticated"));
     }
   });
 

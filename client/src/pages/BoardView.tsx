@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import type { BoardContentsDTO, ColumnDTO, TaskDTO } from "@kanban/shared";
 import { Button } from "@components/ui/Button";
+import { PageLoader } from "@components/ui/PageLoader";
 import { AddColumnModal } from "@components/modals/AddColumnModal";
 import { TaskDetailsModal } from "@components/modals/TaskDetailsModal";
 import { useCurrentBoard } from "@/hooks/useCurrentBoard";
@@ -328,7 +329,11 @@ export function BoardView() {
   };
 
   if (isPending || (boardId && contents.isPending)) {
-    return <div className="app-main app-main-board">Loading board…</div>;
+    return (
+      <div className="app-main app-main-board">
+        <PageLoader label="Loading board…" />
+      </div>
+    );
   }
 
   if (!board) {

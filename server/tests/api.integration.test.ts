@@ -18,6 +18,7 @@ const repos = vi.hoisted(() => ({
     findByEmail: vi.fn(),
     findById: vi.fn(),
     findByIds: vi.fn(),
+    findAll: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
   },
@@ -445,6 +446,58 @@ describe("Comments", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data[0].body).toBe("Hello");
+  });
+});
+
+describe("Admin", () => {
+  const adminUser = () =>
+    new User({
+      id: USER_ID,
+      name: "Alice",
+      email: "alice@example.com",
+      passwordHash: "hash",
+      role: "ADMIN",
+    });
+
+  it("lists users for an admin", async () => {
+    repos.user.findById.mockResolvedValue(adminUser());
+    repos.user.findAll.mockResolvedValue([
+      adminUser(),
+      new User({
+        id: OTHER_ID,
+        name: "Bob",
+        email: "bob@example.com",
+        passwordHash: "hash",
+      }),
+    ]);
+
+    const res = await request(app)
+      .get("/api/admin/users")
+      .set("Cookie", await authCookie());
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(2);
+  });
+
+  it("forbids non-admins (403)", async () => {
+    repos.user.findById.mockResolvedValue(fakeUser()); // role USER
+
+    const res = await request(app)
+      .get("/api/admin/users")
+      .set("Cookie", await authCookie());
+
+    expect(res.status).toBe(403);
+  });
+
+  it("blocks an admin from demoting themselves (400)", async () => {
+    repos.user.findById.mockResolvedValue(adminUser());
+
+    const res = await request(app)
+      .patch(`/api/admin/users/${USER_ID}/role`)
+      .set("Cookie", await authCookie())
+      .send({ role: "USER" });
+
+    expect(res.status).toBe(400);
   });
 });
 

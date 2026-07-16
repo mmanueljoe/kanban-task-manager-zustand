@@ -115,6 +115,7 @@ export const openApiSpec = {
     { name: "Comments", description: "Task comment threads" },
     { name: "Activity", description: "Per-board activity feed" },
     { name: "Notifications", description: "Per-user notifications" },
+    { name: "Admin", description: "Platform administration (admin only)" },
   ],
   paths: {
     "/auth/register": {
@@ -618,6 +619,35 @@ export const openApiSpec = {
         summary: "Mark one notification read",
         responses: {
           "200": okNull(),
+          "403": errors.Forbidden,
+          "404": errors.NotFound,
+        },
+      },
+    },
+    "/admin/users": {
+      get: {
+        tags: ["Admin"],
+        summary: "List all users (admin only)",
+        responses: {
+          "200": okList("UserDTO"),
+          "401": errors.NotAuthenticated,
+          "403": errors.Forbidden,
+        },
+      },
+    },
+    "/admin/users/{userId}/role": {
+      parameters: [userIdParam],
+      patch: {
+        tags: ["Admin"],
+        summary: "Set a user's platform role (admin only)",
+        requestBody: body({
+          type: "object",
+          required: ["role"],
+          properties: { role: { type: "string", enum: ["ADMIN", "USER"] } },
+        }),
+        responses: {
+          "200": okItem("UserDTO"),
+          "400": errors.ValidationError,
           "403": errors.Forbidden,
           "404": errors.NotFound,
         },

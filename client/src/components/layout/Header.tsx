@@ -238,11 +238,24 @@ export function Header({
                 className="dropdown-option app-menu-item"
                 onClick={() => {
                   setAccountMenuOpen(false);
-                  void navigate("/admin");
+                  void navigate("/account");
                 }}
               >
-                Admin
+                Account
               </button>
+              {user?.role === "ADMIN" && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="dropdown-option app-menu-item"
+                  onClick={() => {
+                    setAccountMenuOpen(false);
+                    void navigate("/admin");
+                  }}
+                >
+                  Admin
+                </button>
+              )}
               <button
                 type="button"
                 role="menuitem"

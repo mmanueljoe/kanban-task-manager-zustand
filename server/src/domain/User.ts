@@ -51,6 +51,10 @@ export class User {
     this._role = "ADMIN";
   }
 
+  demoteToUser(): void {
+    this._role = "USER";
+  }
+
   isAdmin(): boolean {
     return this._role === "ADMIN";
   }

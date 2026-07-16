@@ -55,4 +55,10 @@ export class UserRepository {
     const rows = await prisma.user.findMany({ where: { id: { in: ids } } });
     return rows.map(toDomain);
   }
+
+  // Every user on the platform — for the admin panel.
+  async findAll(): Promise<User[]> {
+    const rows = await prisma.user.findMany({ orderBy: { createdAt: "asc" } });
+    return rows.map(toDomain);
+  }
 }

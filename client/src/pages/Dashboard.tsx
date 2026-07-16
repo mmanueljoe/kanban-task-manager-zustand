@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { memo } from "react";
 import { useBoards } from "@/hooks/useBoardQueries";
+import { PageLoader } from "@components/ui/PageLoader";
 
 export const BoardCard = memo(function BoardCard({
   boardName,
@@ -20,7 +21,11 @@ export function Dashboard() {
   const { data: boards, isPending, isError } = useBoards();
 
   if (isPending) {
-    return <div className="app-main">Loading boards…</div>;
+    return (
+      <div className="app-main">
+        <PageLoader label="Loading boards…" />
+      </div>
+    );
   }
 
   if (isError) {
