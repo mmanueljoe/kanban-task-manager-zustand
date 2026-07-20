@@ -5,8 +5,6 @@ import { requireUserId } from "@/utils/requireUserId.js";
 import { serializeTask } from "@/utils/serialize.js";
 import { success } from "@/utils/apiResponse.js";
 
-const taskService = new TaskService();
-
 export const createTaskSchema = z.object({
   title: z.string().min(1, "Task title is required"),
   description: z.string().optional(),
@@ -25,10 +23,6 @@ export const editTaskSchema = z
     }
   );
 
-// `position` is a placement *locator*, not a stored value: the client sends
-// where-between-neighbours it dropped the card (frequently fractional). The
-// service converts it to a real integer slot, so any finite number is valid
-// here — the storage stays Int because the server, not the client, chooses it.
 export const moveTaskSchema = z.object({
   toColumnId: z.string().min(1, "toColumnId is required"),
   position: z.number().finite(),
@@ -43,89 +37,93 @@ export const addSubtaskSchema = z.object({
   title: z.string().min(1, "Subtask title is required"),
 });
 
-export const createTask: RequestHandler = async (req, res) => {
-  const { columnId } = req.params as { columnId: string };
-  const task = await taskService.createTask(requireUserId(req), columnId, {
-    title: req.body.title,
-    description: req.body.description,
-  });
-  res.status(201).json(success(serializeTask(task)));
-};
+export class TaskController {
+  constructor(private readonly tasks: TaskService) {}
 
-export const listTasks: RequestHandler = async (req, res) => {
-  const { columnId } = req.params as { columnId: string };
-  const tasks = await taskService.listTasks(requireUserId(req), columnId);
-  res.status(200).json(success(tasks.map(serializeTask)));
-};
-
-export const editTask: RequestHandler = async (req, res) => {
-  const { taskId } = req.params as { taskId: string };
-  const task = await taskService.editTask(requireUserId(req), taskId, {
-    title: req.body.title,
-    description: req.body.description,
-  });
-  res.status(200).json(success(serializeTask(task)));
-};
-
-export const moveTask: RequestHandler = async (req, res) => {
-  const { taskId } = req.params as { taskId: string };
-  const task = await taskService.moveTask(
-    requireUserId(req),
-    taskId,
-    req.body.toColumnId,
-    req.body.position
-  );
-  res.status(200).json(success(serializeTask(task)));
-};
-
-export const assignTask: RequestHandler = async (req, res) => {
-  const { taskId } = req.params as { taskId: string };
-  const task = await taskService.assignTask(
-    requireUserId(req),
-    taskId,
-    req.body.assigneeId
-  );
-  res.status(200).json(success(serializeTask(task)));
-};
-
-export const deleteTask: RequestHandler = async (req, res) => {
-  const { taskId } = req.params as { taskId: string };
-  await taskService.deleteTask(requireUserId(req), taskId);
-  res.status(200).json(success(null));
-};
-
-export const addSubtask: RequestHandler = async (req, res) => {
-  const { taskId } = req.params as { taskId: string };
-  const task = await taskService.addSubtask(
-    requireUserId(req),
-    taskId,
-    req.body.title
-  );
-  res.status(201).json(success(serializeTask(task)));
-};
-
-export const toggleSubtask: RequestHandler = async (req, res) => {
-  const { taskId, subtaskId } = req.params as {
-    taskId: string;
-    subtaskId: string;
+  createTask: RequestHandler = async (req, res) => {
+    const { columnId } = req.params as { columnId: string };
+    const task = await this.tasks.createTask(requireUserId(req), columnId, {
+      title: req.body.title,
+      description: req.body.description,
+    });
+    res.status(201).json(success(serializeTask(task)));
   };
-  const task = await taskService.toggleSubtask(
-    requireUserId(req),
-    taskId,
-    subtaskId
-  );
-  res.status(200).json(success(serializeTask(task)));
-};
 
-export const removeSubtask: RequestHandler = async (req, res) => {
-  const { taskId, subtaskId } = req.params as {
-    taskId: string;
-    subtaskId: string;
+  listTasks: RequestHandler = async (req, res) => {
+    const { columnId } = req.params as { columnId: string };
+    const tasks = await this.tasks.listTasks(requireUserId(req), columnId);
+    res.status(200).json(success(tasks.map(serializeTask)));
   };
-  const task = await taskService.removeSubtask(
-    requireUserId(req),
-    taskId,
-    subtaskId
-  );
-  res.status(200).json(success(serializeTask(task)));
-};
+
+  editTask: RequestHandler = async (req, res) => {
+    const { taskId } = req.params as { taskId: string };
+    const task = await this.tasks.editTask(requireUserId(req), taskId, {
+      title: req.body.title,
+      description: req.body.description,
+    });
+    res.status(200).json(success(serializeTask(task)));
+  };
+
+  moveTask: RequestHandler = async (req, res) => {
+    const { taskId } = req.params as { taskId: string };
+    const task = await this.tasks.moveTask(
+      requireUserId(req),
+      taskId,
+      req.body.toColumnId,
+      req.body.position
+    );
+    res.status(200).json(success(serializeTask(task)));
+  };
+
+  assignTask: RequestHandler = async (req, res) => {
+    const { taskId } = req.params as { taskId: string };
+    const task = await this.tasks.assignTask(
+      requireUserId(req),
+      taskId,
+      req.body.assigneeId
+    );
+    res.status(200).json(success(serializeTask(task)));
+  };
+
+  deleteTask: RequestHandler = async (req, res) => {
+    const { taskId } = req.params as { taskId: string };
+    await this.tasks.deleteTask(requireUserId(req), taskId);
+    res.status(200).json(success(null));
+  };
+
+  addSubtask: RequestHandler = async (req, res) => {
+    const { taskId } = req.params as { taskId: string };
+    const task = await this.tasks.addSubtask(
+      requireUserId(req),
+      taskId,
+      req.body.title
+    );
+    res.status(201).json(success(serializeTask(task)));
+  };
+
+  toggleSubtask: RequestHandler = async (req, res) => {
+    const { taskId, subtaskId } = req.params as {
+      taskId: string;
+      subtaskId: string;
+    };
+    const task = await this.tasks.toggleSubtask(
+      requireUserId(req),
+      taskId,
+      subtaskId
+    );
+    res.status(200).json(success(serializeTask(task)));
+  };
+
+  removeSubtask: RequestHandler = async (req, res) => {
+    const { taskId, subtaskId } = req.params as {
+      taskId: string;
+      subtaskId: string;
+    };
+    const task = await this.tasks.removeSubtask(
+      requireUserId(req),
+      taskId,
+      subtaskId
+    );
+    res.status(200).json(success(serializeTask(task)));
+  };
+}

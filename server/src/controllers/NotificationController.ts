@@ -4,20 +4,22 @@ import { requireUserId } from "@/utils/requireUserId.js";
 import { serializeNotification } from "@/utils/serialize.js";
 import { success } from "@/utils/apiResponse.js";
 
-const notificationService = new NotificationService();
+export class NotificationController {
+  constructor(private readonly notifications: NotificationService) {}
 
-export const listNotifications: RequestHandler = async (req, res) => {
-  const items = await notificationService.listForUser(requireUserId(req));
-  res.status(200).json(success(items.map(serializeNotification)));
-};
+  listNotifications: RequestHandler = async (req, res) => {
+    const items = await this.notifications.listForUser(requireUserId(req));
+    res.status(200).json(success(items.map(serializeNotification)));
+  };
 
-export const markRead: RequestHandler = async (req, res) => {
-  const { notificationId } = req.params as { notificationId: string };
-  await notificationService.markRead(requireUserId(req), notificationId);
-  res.status(200).json(success(null));
-};
+  markRead: RequestHandler = async (req, res) => {
+    const { notificationId } = req.params as { notificationId: string };
+    await this.notifications.markRead(requireUserId(req), notificationId);
+    res.status(200).json(success(null));
+  };
 
-export const markAllRead: RequestHandler = async (req, res) => {
-  await notificationService.markAllRead(requireUserId(req));
-  res.status(200).json(success(null));
-};
+  markAllRead: RequestHandler = async (req, res) => {
+    await this.notifications.markAllRead(requireUserId(req));
+    res.status(200).json(success(null));
+  };
+}

@@ -11,10 +11,6 @@ import {
 } from "@/utils/serialize.js";
 import { success } from "@/utils/apiResponse.js";
 
-const boardService = new BoardService();
-const columnService = new ColumnService();
-const taskService = new TaskService();
-
 export const createBoardSchema = z.object({
   name: z.string().min(1, "Board name is required"),
 });
@@ -36,103 +32,114 @@ export const transferSchema = z.object({
   newOwnerId: z.string().min(1, "newOwnerId is required"),
 });
 
-export const createBoard: RequestHandler = async (req, res) => {
-  const board = await boardService.createBoard(
-    requireUserId(req),
-    req.body.name
-  );
-  res.status(201).json(success(serializeBoard(board)));
-};
+export class BoardController {
+  // Services are injected, not created here — the routes file decides which
+  // concrete ones to hand in. Handlers are arrow properties so `this` stays
+  // bound when Express calls them as bare functions.
+  constructor(
+    private readonly boards: BoardService,
+    private readonly columns: ColumnService,
+    private readonly tasks: TaskService
+  ) {}
 
-export const listBoards: RequestHandler = async (req, res) => {
-  const boards = await boardService.listMyBoards(requireUserId(req));
-  res.status(200).json(success(boards.map(serializeBoard)));
-};
-
-export const getBoard: RequestHandler = async (req, res) => {
-  const { boardId } = req.params as { boardId: string };
-  const board = await boardService.getBoard(requireUserId(req), boardId);
-  res.status(200).json(success(serializeBoard(board)));
-};
-
-// The whole board in one request: board + columns + all tasks.
-export const getBoardContents: RequestHandler = async (req, res) => {
-  const { boardId } = req.params as { boardId: string };
-  const userId = requireUserId(req);
-  const board = await boardService.getBoard(userId, boardId);
-  const columns = await columnService.listColumns(userId, boardId);
-  const tasks = await taskService.listTasksByBoard(userId, boardId);
-  res.status(200).json(
-    success({
-      board: serializeBoard(board),
-      columns: columns.map(serializeColumn),
-      tasks: tasks.map(serializeTask),
-    })
-  );
-};
-
-export const renameBoard: RequestHandler = async (req, res) => {
-  const { boardId } = req.params as { boardId: string };
-  const board = await boardService.renameBoard(
-    requireUserId(req),
-    boardId,
-    req.body.name
-  );
-  res.status(200).json(success(serializeBoard(board)));
-};
-
-export const deleteBoard: RequestHandler = async (req, res) => {
-  const { boardId } = req.params as { boardId: string };
-  await boardService.deleteBoard(requireUserId(req), boardId);
-  res.status(200).json(success(null));
-};
-
-export const getMembers: RequestHandler = async (req, res) => {
-  const { boardId } = req.params as { boardId: string };
-  const members = await boardService.listMembers(requireUserId(req), boardId);
-  res.status(200).json(success(members));
-};
-
-export const inviteCollaborator: RequestHandler = async (req, res) => {
-  const { boardId } = req.params as { boardId: string };
-  await boardService.inviteCollaborator(
-    requireUserId(req),
-    boardId,
-    req.body.email,
-    req.body.role
-  );
-  res.status(201).json(success(null));
-};
-
-export const changeCollaboratorRole: RequestHandler = async (req, res) => {
-  const { boardId, userId } = req.params as {
-    boardId: string;
-    userId: string;
+  createBoard: RequestHandler = async (req, res) => {
+    const board = await this.boards.createBoard(
+      requireUserId(req),
+      req.body.name
+    );
+    res.status(201).json(success(serializeBoard(board)));
   };
-  await boardService.changeCollaboratorRole(
-    requireUserId(req),
-    boardId,
-    userId,
-    req.body.role
-  );
-  res.status(200).json(success(null));
-};
 
-export const removeCollaborator: RequestHandler = async (req, res) => {
-  const { boardId, userId } = req.params as {
-    boardId: string;
-    userId: string;
+  listBoards: RequestHandler = async (req, res) => {
+    const boards = await this.boards.listMyBoards(requireUserId(req));
+    res.status(200).json(success(boards.map(serializeBoard)));
   };
-  await boardService.removeCollaborator(requireUserId(req), boardId, userId);
-  res.status(200).json(success(null));
-};
 
-export const transferOwnership: RequestHandler = async (req, res) => {
-  const { boardId } = req.params as { boardId: string };
-  await boardService.transferOwnership(
-    requireUserId(req),
-    boardId,
-    req.body.newOwnerId
-  );
-  res.status(200).json(success(null));
-};
+  getBoard: RequestHandler = async (req, res) => {
+    const { boardId } = req.params as { boardId: string };
+    const board = await this.boards.getBoard(requireUserId(req), boardId);
+    res.status(200).json(success(serializeBoard(board)));
+  };
+
+  // The whole board in one request: board + columns + all tasks.
+  getBoardContents: RequestHandler = async (req, res) => {
+    const { boardId } = req.params as { boardId: string };
+    const userId = requireUserId(req);
+    const board = await this.boards.getBoard(userId, boardId);
+    const columns = await this.columns.listColumns(userId, boardId);
+    const tasks = await this.tasks.listTasksByBoard(userId, boardId);
+    res.status(200).json(
+      success({
+        board: serializeBoard(board),
+        columns: columns.map(serializeColumn),
+        tasks: tasks.map(serializeTask),
+      })
+    );
+  };
+
+  renameBoard: RequestHandler = async (req, res) => {
+    const { boardId } = req.params as { boardId: string };
+    const board = await this.boards.renameBoard(
+      requireUserId(req),
+      boardId,
+      req.body.name
+    );
+    res.status(200).json(success(serializeBoard(board)));
+  };
+
+  deleteBoard: RequestHandler = async (req, res) => {
+    const { boardId } = req.params as { boardId: string };
+    await this.boards.deleteBoard(requireUserId(req), boardId);
+    res.status(200).json(success(null));
+  };
+
+  getMembers: RequestHandler = async (req, res) => {
+    const { boardId } = req.params as { boardId: string };
+    const members = await this.boards.listMembers(requireUserId(req), boardId);
+    res.status(200).json(success(members));
+  };
+
+  inviteCollaborator: RequestHandler = async (req, res) => {
+    const { boardId } = req.params as { boardId: string };
+    await this.boards.inviteCollaborator(
+      requireUserId(req),
+      boardId,
+      req.body.email,
+      req.body.role
+    );
+    res.status(201).json(success(null));
+  };
+
+  changeCollaboratorRole: RequestHandler = async (req, res) => {
+    const { boardId, userId } = req.params as {
+      boardId: string;
+      userId: string;
+    };
+    await this.boards.changeCollaboratorRole(
+      requireUserId(req),
+      boardId,
+      userId,
+      req.body.role
+    );
+    res.status(200).json(success(null));
+  };
+
+  removeCollaborator: RequestHandler = async (req, res) => {
+    const { boardId, userId } = req.params as {
+      boardId: string;
+      userId: string;
+    };
+    await this.boards.removeCollaborator(requireUserId(req), boardId, userId);
+    res.status(200).json(success(null));
+  };
+
+  transferOwnership: RequestHandler = async (req, res) => {
+    const { boardId } = req.params as { boardId: string };
+    await this.boards.transferOwnership(
+      requireUserId(req),
+      boardId,
+      req.body.newOwnerId
+    );
+    res.status(200).json(success(null));
+  };
+}

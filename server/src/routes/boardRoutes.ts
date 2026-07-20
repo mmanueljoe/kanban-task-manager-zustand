@@ -1,53 +1,70 @@
 import { Router } from "express";
 import { authenticate } from "@/middlewares/authenticate.js";
 import { validateBody } from "@/middlewares/validate.js";
-import * as board from "@/controllers/BoardController.js";
-import * as column from "@/controllers/ColumnController.js";
-import * as activity from "@/controllers/ActivityController.js";
+import {
+  createBoardSchema,
+  renameBoardSchema,
+  inviteSchema,
+  changeRoleSchema,
+  transferSchema,
+} from "@/controllers/BoardController.js";
+import { createColumnSchema } from "@/controllers/ColumnController.js";
+import {
+  boardController,
+  columnController,
+  activityController,
+} from "@/composition.js";
 
 export const boardRoutes = Router();
 
 // Everything under /boards requires a logged-in user.
 boardRoutes.use(authenticate);
 
-boardRoutes.post("/", validateBody(board.createBoardSchema), board.createBoard);
-boardRoutes.get("/", board.listBoards);
-boardRoutes.get("/:boardId", board.getBoard);
-boardRoutes.get("/:boardId/full", board.getBoardContents);
+boardRoutes.post(
+  "/",
+  validateBody(createBoardSchema),
+  boardController.createBoard
+);
+boardRoutes.get("/", boardController.listBoards);
+boardRoutes.get("/:boardId", boardController.getBoard);
+boardRoutes.get("/:boardId/full", boardController.getBoardContents);
 boardRoutes.patch(
   "/:boardId",
-  validateBody(board.renameBoardSchema),
-  board.renameBoard
+  validateBody(renameBoardSchema),
+  boardController.renameBoard
 );
-boardRoutes.delete("/:boardId", board.deleteBoard);
+boardRoutes.delete("/:boardId", boardController.deleteBoard);
 
 // Columns nested under their board.
 boardRoutes.post(
   "/:boardId/columns",
-  validateBody(column.createColumnSchema),
-  column.addColumn
+  validateBody(createColumnSchema),
+  columnController.addColumn
 );
-boardRoutes.get("/:boardId/columns", column.listColumns);
+boardRoutes.get("/:boardId/columns", columnController.listColumns);
 
 // Activity feed for the board.
-boardRoutes.get("/:boardId/activity", activity.listActivity);
+boardRoutes.get("/:boardId/activity", activityController.listActivity);
 
 // Collaborators.
-boardRoutes.get("/:boardId/members", board.getMembers);
+boardRoutes.get("/:boardId/members", boardController.getMembers);
 boardRoutes.post(
   "/:boardId/collaborators",
-  validateBody(board.inviteSchema),
-  board.inviteCollaborator
+  validateBody(inviteSchema),
+  boardController.inviteCollaborator
 );
 boardRoutes.patch(
   "/:boardId/collaborators/:userId",
-  validateBody(board.changeRoleSchema),
-  board.changeCollaboratorRole
+  validateBody(changeRoleSchema),
+  boardController.changeCollaboratorRole
 );
-boardRoutes.delete("/:boardId/collaborators/:userId", board.removeCollaborator);
+boardRoutes.delete(
+  "/:boardId/collaborators/:userId",
+  boardController.removeCollaborator
+);
 
 boardRoutes.post(
   "/:boardId/transfer",
-  validateBody(board.transferSchema),
-  board.transferOwnership
+  validateBody(transferSchema),
+  boardController.transferOwnership
 );

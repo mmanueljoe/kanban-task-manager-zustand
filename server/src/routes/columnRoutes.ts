@@ -1,8 +1,12 @@
 import { Router } from "express";
 import { authenticate } from "@/middlewares/authenticate.js";
 import { validateBody } from "@/middlewares/validate.js";
-import * as column from "@/controllers/ColumnController.js";
-import * as task from "@/controllers/TaskController.js";
+import {
+  renameColumnSchema,
+  reorderColumnSchema,
+} from "@/controllers/ColumnController.js";
+import { createTaskSchema } from "@/controllers/TaskController.js";
+import { columnController, taskController } from "@/composition.js";
 
 export const columnRoutes = Router();
 
@@ -10,20 +14,20 @@ columnRoutes.use(authenticate);
 
 columnRoutes.patch(
   "/:columnId",
-  validateBody(column.renameColumnSchema),
-  column.renameColumn
+  validateBody(renameColumnSchema),
+  columnController.renameColumn
 );
-columnRoutes.delete("/:columnId", column.deleteColumn);
+columnRoutes.delete("/:columnId", columnController.deleteColumn);
 columnRoutes.patch(
   "/:columnId/position",
-  validateBody(column.reorderColumnSchema),
-  column.reorderColumn
+  validateBody(reorderColumnSchema),
+  columnController.reorderColumn
 );
 
 // Tasks nested under their column.
 columnRoutes.post(
   "/:columnId/tasks",
-  validateBody(task.createTaskSchema),
-  task.createTask
+  validateBody(createTaskSchema),
+  taskController.createTask
 );
-columnRoutes.get("/:columnId/tasks", task.listTasks);
+columnRoutes.get("/:columnId/tasks", taskController.listTasks);

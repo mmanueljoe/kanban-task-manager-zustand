@@ -103,7 +103,7 @@ export const openApiSpec = {
       "requests below.",
   },
   servers: [
-    { url: "http://localhost:3000/api", description: "Local development" },
+    { url: "http://localhost:3001/api", description: "Local development" },
   ],
   // Applied to every operation unless overridden with `security: []`.
   security: [{ cookieAuth: [] }],

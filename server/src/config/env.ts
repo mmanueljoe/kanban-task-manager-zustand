@@ -13,7 +13,7 @@ const nodeEnv = process.env.NODE_ENV ?? "development";
 export const env = {
   nodeEnv,
   isProduction: nodeEnv === "production",
-  port: Number(process.env.PORT ?? 3000),
+  port: Number(process.env.PORT ?? 3001),
   jwtSecret: required("JWT_SECRET"),
   clientOrigin: process.env.CLIENT_ORIGIN ?? "http://localhost:5173",
 };

@@ -7,18 +7,7 @@ import { verifyAuthToken } from "@/utils/jwt.js";
 import { eventBus } from "@/events/eventBus.js";
 import { BoardService } from "@/services/BoardService.js";
 import { NotAuthenticatedError } from "@/errors/AppError.js";
-
-function readCookie(
-  header: string | undefined,
-  name: string
-): string | undefined {
-  if (!header) return undefined;
-  for (const part of header.split(";")) {
-    const [key, ...rest] = part.trim().split("=");
-    if (key === name) return decodeURIComponent(rest.join("="));
-  }
-  return undefined;
-}
+import { readCookie } from "@/utils/readCookie.js";
 
 export function createSocketServer(httpServer: HttpServer): Server {
   const io = new Server(httpServer, {

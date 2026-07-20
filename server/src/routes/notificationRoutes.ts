@@ -1,11 +1,14 @@
 import { Router } from "express";
 import { authenticate } from "@/middlewares/authenticate.js";
-import * as notification from "@/controllers/NotificationController.js";
+import { notificationController } from "@/composition.js";
 
 export const notificationRoutes = Router();
 
 notificationRoutes.use(authenticate);
 
-notificationRoutes.get("/", notification.listNotifications);
-notificationRoutes.post("/read-all", notification.markAllRead);
-notificationRoutes.patch("/:notificationId/read", notification.markRead);
+notificationRoutes.get("/", notificationController.listNotifications);
+notificationRoutes.post("/read-all", notificationController.markAllRead);
+notificationRoutes.patch(
+  "/:notificationId/read",
+  notificationController.markRead
+);
